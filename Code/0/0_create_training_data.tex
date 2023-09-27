@@ -1,5 +1,5 @@
 \hypertarget{import-and-prepare}{%
-\section{Import and prepare}\label{import-and-prepare}}
+\section*{Import and prepare}\label{import-and-prepare}}
 
 \begin{lstlisting}[language=Python]
 import sys
@@ -22,11 +22,11 @@ test_size_ratio = 0.2
 \end{lstlisting}
 
 \hypertarget{training-data-for-top-bot-layer}{%
-\section{Training Data for top bot
+\section*{Training Data for top bot
 layer}\label{training-data-for-top-bot-layer}}
 
 \hypertarget{mixcont}{%
-\subsection{mixcont}\label{mixcont}}
+\subsection*{mixcont}\label{mixcont}}
 
 \begin{lstlisting}[language=Python]
 folders = [
@@ -72,7 +72,7 @@ df.to_pickle('../../data/df_mixcont.pkl') # save the df without preprocessing
 \end{lstlisting}
 
 \hypertarget{preprocess}{%
-\subsubsection{preprocess}\label{preprocess}}
+\subsubsection*{preprocess}\label{preprocess}}
 
 \begin{lstlisting}[language=Python]
 df = pd.read_pickle('../../data/df_mixcont.pkl') 
@@ -92,7 +92,7 @@ df_scaled.to_pickle('../../data/df_mixcont_scaled.pkl')  # save the normalized, 
 \end{lstlisting}
 
 \hypertarget{top-layer-data}{%
-\subsubsection{Top Layer data}\label{top-layer-data}}
+\subsubsection*{Top Layer data}\label{top-layer-data}}
 
 \begin{lstlisting}[language=Python]
 df_scaled = pd.read_pickle('../../data/df_mixcont_scaled.pkl')
@@ -128,7 +128,7 @@ pickle.dump(data, open('../../data/training_data/1/dataset_mixcont_top_layer.pkl
 \end{lstlisting}
 
 \hypertarget{bot-layer-data}{%
-\subsubsection{Bot Layer data}\label{bot-layer-data}}
+\subsubsection*{Bot Layer data}\label{bot-layer-data}}
 
 \begin{lstlisting}[language=Python]
 df_scaled = pd.read_pickle('../../data/df_mixcont_scaled.pkl')
@@ -186,7 +186,7 @@ for folder in folders[1:]:
 \end{lstlisting}
 
 \hypertarget{clean}{%
-\subsection{clean}\label{clean}}
+\subsection*{clean}\label{clean}}
 
 \begin{lstlisting}[language=Python]
 folders = [
@@ -210,7 +210,7 @@ df.to_pickle('../../data/df_clean.pkl') # save the df without preprocessing
 \end{lstlisting}
 
 \hypertarget{preprocess}{%
-\subsubsection{preprocess}\label{preprocess}}
+\subsubsection*{preprocess}\label{preprocess}}
 
 \begin{lstlisting}[language=Python]
 df = pd.read_pickle('../../data/df_clean.pkl') 
@@ -230,7 +230,7 @@ df_scaled.to_pickle('../../data/df_clean_scaled.pkl')  # save the normalized, sc
 \end{lstlisting}
 
 \hypertarget{top-layer-data}{%
-\subsubsection{Top Layer data}\label{top-layer-data}}
+\subsubsection*{Top Layer data}\label{top-layer-data}}
 
 \begin{lstlisting}[language=Python]
 df_scaled = pd.read_pickle('../../data/df_clean_scaled.pkl')
@@ -273,7 +273,7 @@ pickle.dump(data, open('../../data/training_data/1/dataset_clean_top_layer.pkl',
 \end{lstlisting}
 
 \hypertarget{bot-layer-data}{%
-\subsubsection{Bot Layer data}\label{bot-layer-data}}
+\subsubsection*{Bot Layer data}\label{bot-layer-data}}
 
 \begin{lstlisting}[language=Python]
 df_scaled = pd.read_pickle('../../data/df_clean_scaled.pkl')
@@ -316,10 +316,10 @@ pickle.dump(data, open('../../data/training_data/1/dataset_clean_bot_layer.pkl',
 \end{lstlisting}
 
 \hypertarget{training-data-with-multi}{%
-\section{Training Data with Multi}\label{training-data-with-multi}}
+\section*{Training Data with Multi}\label{training-data-with-multi}}
 
 \hypertarget{load-data-and-build-dataframe}{%
-\subsection{Load data and build
+\subsection*{Load data and build
 dataframe}\label{load-data-and-build-dataframe}}
 
 \begin{lstlisting}[language=Python]
@@ -341,7 +341,7 @@ df.to_pickle('../../data/df_multi.pkl') # save the df without preprocessing
 \end{lstlisting}
 
 \hypertarget{preprocess}{%
-\subsection{Preprocess}\label{preprocess}}
+\subsection*{Preprocess}\label{preprocess}}
 
 \begin{lstlisting}[language=Python]
 df = pd.read_pickle('../../data/df_multi.pkl')
@@ -360,7 +360,7 @@ df_scaled.to_pickle('../../data/df_multi_scaled.pkl')  # save the normalized, sc
 \end{lstlisting}
 
 \hypertarget{transform-data}{%
-\subsection{Transform data}\label{transform-data}}
+\subsection*{Transform data}\label{transform-data}}
 
 \begin{lstlisting}[language=Python]
 x_train, x_test, y_train, y_test = train_test_split(df_scaled.T.values,
@@ -391,7 +391,7 @@ pickle.dump(data, open('../../data/dataset_multi.pkl', 'wb'))
 \end{lstlisting}
 
 \hypertarget{training-data-with-depth}{%
-\section{Training Data with Depth}\label{training-data-with-depth}}
+\section*{Training Data with Depth}\label{training-data-with-depth}}
 
 \begin{lstlisting}[language=Python]
 folders = [
@@ -426,7 +426,7 @@ duplicateRows = df[df.duplicated()]
 \end{lstlisting}
 
 \hypertarget{preprocess}{%
-\subsubsection{preprocess}\label{preprocess}}
+\subsubsection*{preprocess}\label{preprocess}}
 
 \begin{lstlisting}[language=Python]
 df = pd.read_pickle('../../data/training_data/df/df_mixcont_depth.pkl') 
