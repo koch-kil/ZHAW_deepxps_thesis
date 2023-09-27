@@ -13,15 +13,15 @@ During the model development, it was obvious that we are prone to overfitting th
     \begin{tabular}{c|c|c|c|c|c|c}
         Dataset & Layer & Model   & No. Parameters & Training set & Validation set & Test set*    \\
         \hline 
-        mixcont & top   & CNN     &  82.1 M        &    91.34      &    86.58       & 24.65          \\
-        (n=272k)&       & CNN-DCT &  85.5 M        &    97.25      &    86.42       & 38.5           \\
-                &       & CBAM    &  20.1 M        &   92.80       &    82.80       & 28.64          \\
-                &       & ViT     &  25.8 K        &    79.92     &    82.69       &  52.56  \\
+        mixcont & top   & CNN     &  8.2 M        &    92.37      &    86.68 & 27.91       \\
+        (n=272k)&       & CNN-DCT &  12.3 M        &   91.34        &    86.58       & 14.42           \\
+                &       & CBAM    &  20.1 M        &  92.80       &    82.80       & 28.64          \\
+                &       & ViT     &  35.8 K        &    79.92     &    82.69       & \textbf{52.56}  \\
         \hdashline
-                & bot   & CNN     &   82.1 M       &    89.05       &      79.64    &     45.12      \\
+                & bot   & CNN     &   82.1 M       &\textbf{89.05}&   \textbf{79.64}    &     45.12      \\
                 &       & CNN-DCT &   12.3 M       &    85.39      &    79.39       &   50.23       \\
-                &       & CBAM    &   20.0 M        &    86.65     &    70.96     &       27.44    \\
-                &       & ViT     &                &               &                &               \\
+                &       & CBAM    &   20.1 M        &    86.65     &    70.96     &       27.44    \\
+                &       & ViT     &   35.8 K      &     61.65     &      68.35    &  \textbf{57.21} \\
         \hline                                   
         clean   & top   & CNN     &                &               &                &            \\
         (n=65k)&       & CNN-DCT &                &               &                &            \\
@@ -40,13 +40,12 @@ During the model development, it was obvious that we are prone to overfitting th
 
 
 \subsubsection{Top layer prediction}
-The best model to predict the top layer element was the Vision Transformer-Model, with an accuracy on the test dataset of 52.56 \%. Figure \ref{fig:top_best_loss} shows the categorical crossentropy loss and categorical accuracy for the training (blue) and the validation (orange) datasets respectively. In the confusion matrix, we can see that in the test dataset, Iron (Fe) has been wrongly predicted as Lithium (Li) a total of 4 times, which are the most failures of any wrongly predicted elements. An approach would be to plot the attention of the model on Lithium and Iron spectrum data to investigate the reason behind. However, as shown in Figures \ref{att:Fe} and \ref{att:Li}, they overlap at a binding energy of 55 eV. This is a known overlap of the Li 1s and Fe 3p peaks. However, as the attention does not focus on this part for the Iron spectrum.
-This suggests that the model lacks complexity as both cases overlap in the feature space. As the model only has 25.8k trainable parameters, this is very much possible. 
+The best model to predict the top layer element was the Vision Transformer-Model, with an accuracy on the test dataset of 52.56 \%. Figure \ref{fig:top_best_loss} shows the categorical crossentropy loss and categorical accuracy for the training (blue) and the validation (orange) datasets respectively. In the confusion matrix, we can see that in the test dataset, Iron (Fe) has been wrongly predicted as Lithium (Li) a total of 4 times, which are the most failures of any wrongly predicted elements. An approach would be to plot the attention of the model on Lithium and Iron spectrum data to investigate the reason behind. However, as shown in Figures \ref{att:Fe} and \ref{att:Li}, they overlap at a binding energy of 55 eV. This is a known overlap of the Li 1s and Fe 3p peaks. However, as the attention does not focus on this part for the Iron spectrum, it is not obvious why this faulty prediction was done. It suggests that the model lacks complexity as both cases overlap in the feature space. As the model only has 25.8k trainable parameters, this is very much possible. 
 
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Figures/top_best_loss_acc_vit_4_32_3_4_64.png}
+    \includegraphics[width=\textwidth]{Figures/best_task_1_model_loss.png}
     \caption{Categorical crossentropy loss and crossentropy accuracy for the ViT model training on top-layer training data-labels}
     \label{fig:top_best_loss}
 \end{figure}
@@ -65,7 +64,7 @@ This suggests that the model lacks complexity as both cases overlap in the featu
     \end{subfigure}
     
     \begin{subfigure}[b]{1\textwidth}
-            \includegraphics[width=\textwidth]{Figures/attention.png}
+            \includegraphics[width=\textwidth]{Figures/attention_map_Fe_Training.png}
             \caption{Attention map (blue) for the simulated Iron spectrum (red) prediction}
             \label{att:c}
     \end{subfigure}
@@ -77,7 +76,7 @@ This suggests that the model lacks complexity as both cases overlap in the featu
 \begin{figure}[H]
         \centerline{\includegraphics[width=1.4\textwidth]{Figures/best_task_1_model_CM.png}}
     \centering
-    \caption{Confusion Matrix of Test-Data for best Top-Layer prediction}
+    \caption{Confusion Matrix of Test-Data for best top-layer prediction}
     \label{cm_cnn_1l}
 \end{figure}
 \end{center}
@@ -88,7 +87,7 @@ This suggests that the model lacks complexity as both cases overlap in the featu
 
 
 From the experimental data, the same test dataset was used as for the top-layer prediction. Because survey scans of buried layers are rare, we considered pure elemental spectra to be composed of a buried layer of the pure element respectively.
-From Table \ref{tab:acc_qual}, we can see that the performance of the bottom layer prediction is not always lower than the top layer prediction. However, we would expect a lower accuracy for the bottom layer, due to the principle of XPS measurement, as electrons from the deeper layer must travel through the top layer and thus will be less intense and more influenced by scattering from interactions. Anyway, as we consider experimental data from pure elements as a two-layer system in our test-set, it could also be that the simulated spectra from buried pure elements actually resembles ground truth more accurately.
+From Table \ref{tab:acc_qual}, we can see that the performance of the bottom layer prediction is not always lower than the top layer prediction. However, we would expect a lower accuracy for the bottom layer, due to the principle of XPS measurement, as electrons from the deeper layer must travel through the top layer and thus will be less intense and more influenced by scattering from interactions. Anyway, as we consider experimental data from pure elements as a two-layer system in our test-set, it could also be that the simulated spectra from buried pure elements actually resembles ground truth more accurately. However, the most probable explanation is that the early stopping stopped the model from overfitting because it was harder to train the bot-layer labels due to the previously mentioned scattering effects.
 
 
 
@@ -114,7 +113,5 @@ As depth profiling data is not readily available from public databases, the data
     \caption{ and number of Parameters of the models in respect to dataset and layer}
     \label{tab:acc_depth}
 \end{table}
-
-% experimental data (AG_AG etc.)
 
 
