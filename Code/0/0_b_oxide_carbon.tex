@@ -1,0 +1,51 @@
+\begin{lstlisting}[language=Python]
+import pandas as pd
+import matplotlib.pyplot as plt
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+gradient  = pd.read_csv('../../data/example_data/Al_Ag_gradient.spcreg1.spc', sep='\s+')
+def minMaxScaler(x):
+    return (x - x.min()) / x.max()
+
+plt.figure(figsize=(12, 8))
+plt.plot(minMaxScaler(gradient['geo_1'].to_numpy()));
+data = minMaxScaler(gradient['geo_1'].to_numpy().reshape(1, 1,2048))
+
+separate  = pd.read_csv('../../data/example_data/Al_Ag_separate.spcreg1.spc', sep='\s+')
+plt.plot(minMaxScaler(separate["geo_1"].to_numpy()));
+plt.legend(['gradient', 'separate'])
+\end{lstlisting}
+
+\begin{lstlisting}
+<matplotlib.legend.Legend at 0x1ea2cf67bb0>
+\end{lstlisting}
+
+\includegraphics{78adbcf5ab69c932716a77f0694be5ff38c28e0c.png}
+
+\begin{lstlisting}[language=Python]
+
+plt.plot(minMaxScaler(gradient['geo_1'].to_numpy())-minMaxScaler(separate["geo_1"].to_numpy()));
+\end{lstlisting}
+
+\includegraphics{bef12463a974b1c070ff47500d14d46511fe0c24.png}
+
+\begin{lstlisting}[language=Python]
+gradient  = pd.read_csv('./data/example_data/Al_Ag_gradient.spcreg1.spc', sep='\s+')
+def minMaxScaler(x):
+    return (x - x.min()) / x.max()
+
+plt.figure(figsize=(12, 8))
+plt.plot(minMaxScaler(gradient['geo_1'].to_numpy()));
+data = minMaxScaler(gradient['geo_1'].to_numpy().reshape(1, 1,2048))
+
+separate  = pd.read_csv('./data/example_data/Al_Ag_separate.spcreg1.spc', sep='\s+')
+plt.plot(minMaxScaler(separate["geo_1"].to_numpy()));
+plt.legend(['gradient', 'separate'])
+\end{lstlisting}
+
+\begin{lstlisting}
+<matplotlib.legend.Legend at 0x29116be60a0>
+\end{lstlisting}
+
+\includegraphics{3c73d39af663c51c638273319648d2a831e9f464.png}

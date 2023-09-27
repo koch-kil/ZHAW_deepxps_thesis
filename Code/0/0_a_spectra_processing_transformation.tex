@@ -1,0 +1,543 @@
+\begin{lstlisting}[language=Python]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import shutil
+import glob
+import sys
+sys.path.append('../../modules') # add own modules
+import preprocess, predict, functions_tf, base
+\end{lstlisting}
+
+\begin{lstlisting}
+c:\Users\kochk\anaconda3\envs\deepxps\lib\site-packages\tensorflow_addons\utils\ensure_tf_install.py:53: UserWarning: Tensorflow Addons supports using Python ops for all Tensorflow versions above or equal to 2.6.0 and strictly below 2.9.0 (nightly versions are not supported). 
+ The versions of TensorFlow you are currently using is 2.10.0 and is not supported. 
+Some things might work, some things might not.
+If you were to encounter a bug, do not file an issue.
+If you want to make sure you're using a tested and supported configuration, either change the TensorFlow version or the TensorFlow Addons's version. 
+You can find the compatibility matrix in TensorFlow Addon's readme:
+https://github.com/tensorflow/addons
+  warnings.warn(
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+sim_sep_data = glob.glob('data\simulation_data\depth_CO_sep\*.spc')
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+for src in sim_sep_data[:2]:
+    dst = src.replace('.spc', '.txt')
+    shutil.copyfile(src, dst)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+sim_sep_txt =  glob.glob('data\simulation_data\depth_CO_sep\*.txt')
+for file in sim_sep_txt:
+    with open(file, 'r') as f:
+        lines = f.readlines()
+        lines = lines[1:]
+    with open(file, 'w') as f:
+        f.writelines(lines[::-1])
+
+    df = pd.read_csv(file, sep=' ', header=None, names=['wavelength', 'intensity', ''])
+    myseries_index = df.intensity.index
+    myseries = df.intensity.iloc[::-1]
+    myseries.index = myseries_index
+    plt.plot(myseries)
+    
+\end{lstlisting}
+
+\includegraphics{f515b861fccba7fea52b42068a2867c6eaeba0a1.png}
+
+\begin{lstlisting}[language=Python]
+plt.plot(df.wavelength, df.intensity)
+\end{lstlisting}
+
+\begin{lstlisting}
+[<matplotlib.lines.Line2D at 0x173a86ba910>]
+\end{lstlisting}
+
+\includegraphics{ad0da4a06e7dd65e3bb96beb829d383460c2b9af.png}
+
+\begin{lstlisting}[language=Python]
+x_series = abs(df.wavelength - max(df.wavelength))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+myxseries_index = x_series.index
+myxseries = x_series.iloc[::-1]
+myxseries.index = myxseries_index
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df_new = pd.DataFrame([myxseries, myseries]).T
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+plt.plot(df_new.wavelength, df_new.intensity)
+\end{lstlisting}
+
+\begin{lstlisting}
+[<matplotlib.lines.Line2D at 0x173a4c0e9a0>]
+\end{lstlisting}
+
+\includegraphics{a33fbad5baf864d08dc0155cc944c2db9c5d59ef.png}
+
+\begin{lstlisting}[language=Python]
+df_new.to_csv('data/test.csv', sep=' ', header=None, index=False)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df_normal = pd.DataFrame([x_series, df.intensity],).T
+df_normal.to_csv('data/normal.csv', sep=' ', header=None, index=False)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df
+\end{lstlisting}
+
+\begin{lstlisting}
+     wavelength    intensity    
+0       #energy        geo_1 NaN
+1         486.6  2.96652e-06 NaN
+2       487.088   2.9681e-06 NaN
+3       487.577  2.96979e-06 NaN
+4       488.065  2.97162e-06 NaN
+...         ...          ...  ..
+2044    1484.16  8.43099e-10 NaN
+2045    1484.65  8.25756e-10 NaN
+2046    1485.14  8.09966e-10 NaN
+2047    1485.62  7.95962e-10 NaN
+2048    1486.11  7.83796e-10 NaN
+
+[2049 rows x 3 columns]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+x_vals = pd.read_csv('data\datatest.txt', sep='\t', 
+            header=None, 
+            names=['wavelength', 'intensity', 'new'],
+            usecols=['wavelength'],
+            skiprows=10)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+plt.plot(x_vals, df.intensity)
+\end{lstlisting}
+
+\begin{lstlisting}
+[<matplotlib.lines.Line2D at 0x173a6c468b0>]
+\end{lstlisting}
+
+\includegraphics{30130a53e113a614b814256546dbb481ec101412.png}
+
+\begin{lstlisting}[language=Python]
+df = pd.read_csv(sim_sep_txt[0], sep=' ', header=None, names=['wavelength', 'intensity', ''])
+myseries_index = df.intensity.index
+myseries = df.intensity.iloc[::-1]
+myseries.index = myseries_index
+plt.plot(x_vals, myseries)
+\end{lstlisting}
+
+\begin{lstlisting}
+[<matplotlib.lines.Line2D at 0x173a4e366d0>]
+\end{lstlisting}
+
+\includegraphics{9b7da88b5fad931c550d84e883bfb786af42fa8f.png}
+
+\hypertarget{extend-or-crop-data-not-in-the-usual-range}{%
+\subsection{Extend or crop data not in the usual
+range}\label{extend-or-crop-data-not-in-the-usual-range}}
+
+\begin{lstlisting}[language=Python]
+import glob
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import sys
+sys.path.append("../../modules/")
+import preprocess as pp
+from vamas import Vamas
+dirs = '../../data/test_data/Selected_Spectra/elemental/'
+files = [file for file in os.listdir(dirs)]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+FILE = files[11]
+print(FILE)
+\end{lstlisting}
+
+\begin{lstlisting}
+Al_Al_Al_mono.vms
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+x, y, x_new, y_new, label = pp.parse_file(os.path.join(dirs,FILE), filetype='vms', scale=True, N_points=1024)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import TransformedBbox, BboxPatch, BboxConnector
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+
+x, y, x_new, y_new, label = pp.parse_file(os.path.join(dirs,FILE), filetype='vms', scale=True, N_points=1024)
+fig, ax = plt.subplots(layout='constrained', figsize=(10,5), dpi=300)
+ax.plot(x, y, color='blue')
+plt.xlim(1400, -15)
+ax.set_xlim(1400,-15)
+ax.set_ylabel('counts', color='blue', fontsize=14)
+ax.set_xlabel('Binding Energy (eV)', fontsize=14)
+ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+
+ax2 = ax.twinx()
+ax2.plot(x_new,np.flip(y_new), color='red')
+ax2.set_ylabel('arb. Unit', color='red', fontsize=14)
+
+
+fig.legend(['original', 'preprocessed, scaled'], loc='upper right',
+borderpad=1, labelspacing=0.3, fontsize=12, bbox_to_anchor=(0.32, 0.94), frameon=True)
+# plt.title('Preprocessing routine', fontsize=14)
+
+
+# first inset plot
+axins = inset_axes(ax, width=3, height=1.6, loc=2,bbox_to_anchor=(200,1100)) # zoom = 6
+axins.plot(x, y, color='blue')
+axins.set_xlim(1100,900) # Limit the region for zoom
+axins.set_ylim(max(y)/25, max(y)/9)
+axins.axvline(1000, 0, 1, color='grey',ls='--')
+
+
+
+axins1 = axins.twinx()
+axins1.plot(x_new, np.flip(y_new), color='red')
+axins1.set_xlim(1100,900) # Limit the region for zoom
+axins1.set_ylim(max(y_new)/25, max(y_new)/9)
+
+axins.set_xticklabels(['', 950, 1000, 1050, ''])
+axins.set_yticklabels([])
+axins1.set_yticklabels([])
+
+
+
+plt.yticks(visible=False)
+
+def mark_inset(parent_axes, inset_axes, loc1a=1, loc1b=1, loc2a=2, loc2b=2, **kwargs):
+    rect = TransformedBbox(inset_axes.viewLim, parent_axes.transData)
+
+    pp = BboxPatch(rect, fill=False, **kwargs)
+    parent_axes.add_patch(pp)
+
+    p1 = BboxConnector(inset_axes.bbox, rect, loc1=loc1a, loc2=loc1b, **kwargs)
+    inset_axes.add_patch(p1)
+    p1.set_clip_on(False)
+    p2 = BboxConnector(inset_axes.bbox, rect, loc1=loc2a, loc2=loc2b, **kwargs)
+    inset_axes.add_patch(p2)
+    p2.set_clip_on(False)
+
+    return pp, p1, p2
+
+# second inset plot
+ax_ins_orig_2 = inset_axes(ax, width=2.5, height=2.5, loc=6, bbox_to_anchor=(1300, 900))
+ax_ins_orig_2.plot(x, y,  color='blue', label='_nolegend_')
+ax_ins_orig_2.set_ylim(0, max(y)*1.02)
+ax_ins_orig_2.set_xlim(140, 100)
+ 
+ax_ins_scaled_2 = ax_ins_orig_2.twinx()
+ax_ins_scaled_2.plot(x_new, np.flip(y_new), color='red', label='_nolegend_')
+
+# ax_ins_orig_2.set_xticklabels()
+ax_ins_orig_2.set_yticklabels([])
+ax_ins_scaled_2.set_yticklabels([])
+
+ax_ins_scaled_2.set_ylim(0, max(y_new)*1.02)
+ax_ins_scaled_2.set_xlim(140, 110)
+
+
+mark_inset(ax, axins, loc1a=4, loc1b=2, loc2a=3, loc2b=1, fc="none", ec="black") 
+mark_inset(ax, ax_ins_orig_2, loc1a=2, loc1b=1, loc2a=1, loc2b=2, fc="none", ec="black") 
+
+# plt.xticks(visible=False)  # Not present ticks
+plt.yticks(visible=False)
+# mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
+plt.draw()
+axins1.text(1080, 0.09, 'a)', fontsize=18)
+ax_ins_orig_2.text(135, max(y)*0.8, 'b)', fontsize=18)
+plt.savefig('../../data/../documentation/figures/preprocessing_routine.png')
+plt.savefig(r'C:\Users\kochk\Documents\Git_Repos\Github\ZHAW_deepxps_thesis\Figures\preprocessing_routine.png')
+\end{lstlisting}
+
+\begin{lstlisting}
+C:\Users\kochk\AppData\Local\Temp\ipykernel_13408\3520697006.py:38: UserWarning: FixedFormatter should only be used together with FixedLocator
+  axins.set_xticklabels(['', 950, 1000, 1050, ''])
+\end{lstlisting}
+
+\includegraphics{2cc0e7afa18353776932c9d7905acec6efa968b1.png}
+
+\hypertarget{plots-for-thesis}{%
+\subsection{Plots for thesis}\label{plots-for-thesis}}
+
+\begin{lstlisting}[language=Python]
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import sys
+sys.path.append("../../modules/")
+import preprocess
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df = pd.read_pickle('../../data/training_data/df/df_mixcont.pkl') 
+df_norm = preprocess.MaxScale_df(df).reset_index(drop=True)
+df_noise = df_norm[::2].apply(lambda x: x+x*np.random.normal(0, np.random.randint(1,3)*0.01 , len(x)))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df_norm.columns = df_norm.columns.map(lambda x: '_'.join(x.split('_')[:2]))
+df_noise.columns = df_noise.columns.map(lambda x: '_'.join(x.split('_')[:2]))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df_norm['Fe_Fe'][::2].iloc[:,0].values
+x, y, x_new, y_new, label = preprocess.parse_file(r'C:\Users\kochk\Documents\Git_Repos\Github\deep_xps\data\test_data\Selected_Spectra\elemental\Fe_Fe_Fe, iron, ion etched, Reference Grade spectra.VMS', filetype='vms', scale=True, energy='kinetic', N_points=1024)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+fig, ax = plt.subplots(layout='constrained', figsize=(10,5), dpi=300)
+ax.plot(x_new, df_noise['Fe_Fe'].iloc[:,0].values, alpha=0.7)
+ax.plot(x_new, df_noise['Fe_Fe'].iloc[:,1].values, alpha=0.7)
+ax.plot(x_new, df_noise['Fe_Fe'].iloc[:,2].values, alpha=0.7)
+ax.plot(x_new, np.flip(y_new), alpha=1)
+plt.xlim(1024,0)
+plt.legend(['simulated, with 17 Å adv. C/O Layer',
+            'simulated, with 6 Å adv. C/O Layer',
+            'simulated, without adv. C/O Layer',
+            'experimental, ion-etched'])
+plt.xlabel('Binding Energy (eV)')
+plt.ylabel('Intensity (normalized unit)')
+# plt.title('XPS Spectra of Iron (Fe)');
+plt.text(900, 0.8, 'Fe Auger-Peak', fontsize=12)
+
+
+# first inset plot
+axins = inset_axes(ax, width=3, height=1.6, loc=2,bbox_to_anchor=(1600,1200)) # zoom = 6
+axins.plot(x_new,df_noise['Fe_Fe'].iloc[:,0].values, alpha=0.7)
+axins.plot(x_new,df_noise['Fe_Fe'].iloc[:,1].values, alpha=0.7)
+axins.plot(x_new,df_noise['Fe_Fe'].iloc[:,2].values, alpha=0.7)
+axins.plot(x_new,np.flip(y_new), alpha=1)
+axins.set_xlim(800,710) # Limit the region for zoom
+axins.set_ylim(0,0.7) # Limit the region for zoom
+axins.axvline(1000, 0, 1, color='grey',ls='--')
+# axins.set_xticklabels([])
+axins.set_yticklabels([])
+
+def mark_inset(parent_axes, inset_axes, loc1a=1, loc1b=1, loc2a=2, loc2b=2, **kwargs):
+    rect = TransformedBbox(inset_axes.viewLim, parent_axes.transData)
+
+    pp = BboxPatch(rect, fill=False, **kwargs)
+    parent_axes.add_patch(pp)
+
+    p1 = BboxConnector(inset_axes.bbox, rect, loc1=loc1a, loc2=loc1b, **kwargs)
+    inset_axes.add_patch(p1)
+    p1.set_clip_on(False)
+    p2 = BboxConnector(inset_axes.bbox, rect, loc1=loc2a, loc2=loc2b, **kwargs)
+    inset_axes.add_patch(p2)
+    p2.set_clip_on(False)
+    return pp, p1, p2
+axins.text(795, 0.57,s = 'a)',fontsize=12)
+mark_inset(ax, axins, loc1a=3, loc1b=3, loc2a=2, loc2b=2, fc="none", ec="black", alpha=0.6);
+
+x_vals = np.linspace(0, 1, 41)
+intercept = 0.240
+slope = 0.055
+new_arr = np.flip(y_new)[(x_new>720) &( x_new<760)][:-4]
+y_vals = intercept + slope * x_vals
+new_ext = np.append(new_arr, [0.38, 0.38,0.36,0.34])
+axins.fill_between(x_new[(x_new>720) & ( x_new<760)],
+                   y_vals, 
+                   new_ext,
+                #    np.flip(y_new)[(x_new>720) &( x_new<760)], 
+                   alpha=0.7, color='red')
+plt.savefig('../../data/../documentation/figures/Fe_XPS.png', dpi=300)
+plt.savefig(r'C:\Users\kochk\Documents\Git_Repos\Github\ZHAW_deepxps_thesis\Figures\Fe_XPS.png', dpi=300)
+\end{lstlisting}
+
+\includegraphics{782ed6c2b53240d1769c9b24020aa4f98e008925.png}
+
+\begin{lstlisting}[language=Python]
+plt.figure(figsize=(12,7))
+plt.plot(x_new, df_noise['Fe_Fe'].iloc[:,0].values, alpha=1, linestyle='dashed')
+plt.plot(x_new, df_noise['Fe_Fe'][:].iloc[:,1].values, alpha=1, linestyle='dashed')
+plt.plot(x_new, np.flip(y_new), alpha=1)
+plt.xlim(800,675)
+plt.legend(['simulated, with adv. C/O Layer', 'simulated, without adv. C/O Layer', 'experimental, ion-etched'])
+plt.xlabel('Binding Energy (eV)')
+plt.ylabel('Intensity (arb.u.)')
+plt.title('XPS Spectra of Iron (Fe)');
+# plt.savefig('../../data/../documentation/figures/Fe_Peak_XPS.png', dpi=300)
+# plt.savefig(r'C:\Users\kochk\Documents\Git_Repos\Github\ZHAW_deepxps_thesis\Figures\Fe_Peak_XPS.png', dpi=300)
+\end{lstlisting}
+
+\includegraphics{b875edcc3745a88ec2f243bb5058f90abb16dcae.png}
+
+\begin{lstlisting}[language=Python]
+df = pd.read_pickle('../../data/training_data/df/df_mixcont.pkl') 
+df_norm = preprocess.MaxScale_df(df).reset_index(drop=True)  # each spectrum is scaled to 1
+# reduce size to 1024 and add relative noise
+df_noise = df_norm[::2].apply(lambda x: x+x*np.random.normal(0, np.random.randint(1,3)*0.01 , len(x)))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df_noise.filter(regex='Fe_Mg_100|Fe_Mg_50|Fe_Mg_90').plot(figsize=(12,7))
+\end{lstlisting}
+
+\begin{lstlisting}
+<Axes: >
+\end{lstlisting}
+
+\includegraphics{a7b89779856e897d9998132e280eb88ee76f070e.png}
+
+\begin{lstlisting}[language=Python]
+plt.figure(figsize=(12,7))
+plt.plot(x_new, df_noise['Fe_Mg'].iloc[:,0].values, alpha=1, linestyle='dashed')
+plt.plot(x_new, df_noise['Fe_Mg'][:].iloc[:,1].values, alpha=1, linestyle='dashed')
+plt.plot(x_new, np.flip(y_new), alpha=1)
+plt.xlim(800,675)
+plt.legend(['simulated, with adv. C/O Layer', 'simulated, without adv. C/O Layer', 'experimental, ion-etched'])
+plt.xlabel('Binding Energy (eV)')
+plt.ylabel('Intensity (arb.u.)')
+plt.title('XPS Spectra of Iron (Fe)');
+# plt.savefig('../../data/../documentation/figures/Fe_Peak_XPS.png', dpi=300)
+# plt.savefig(r'C:\Users\kochk\Documents\Git_Repos\Github\ZHAW_deepxps_thesis\Figures\Fe_Peak_XPS.png', dpi=300)
+\end{lstlisting}
+
+\includegraphics{ef93faa2375370a17b311412100b0acce2466a7a.png}
+
+\hypertarget{plots-of-confusion-matrices}{%
+\subsection{Plots of confusion
+matrices}\label{plots-of-confusion-matrices}}
+
+\begin{lstlisting}[language=Python]
+import tensorflow as tf
+# ONLY FOR THE BEST MODELS per task / Dataset
+model = keras.models.load_model(r"T:\GItHub_Repos\models\1\mixcont\top_layer\models\simple_cnn_dct_top_layer.h5")
+predictions = model.predict(x_exp.reshape(x_exp.shape[0], 1,1024))
+\end{lstlisting}
+
+\begin{lstlisting}
+7/7 [==============================] - 0s 25ms/step
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+preds = predictions.reshape(predictions.shape[0], n_elements)
+preds = tf.cast(preds, tf.float64)
+preds = np.array([tf.argmax(i) for i in preds])
+preds
+\end{lstlisting}
+
+\begin{lstlisting}
+array([ 0, 36, 11,  0,  0,  0,  1,  1,  1,  1,  1, 62,  3,  3, 34,  5, 33,
+        4,  4,  4, 46, 54, 41, 60,  9,  9, 49, 49, 76,  5, 38, 38, 60, 51,
+       60, 11, 15, 15, 15, 15, 16, 16, 23, 18, 18, 42, 42, 18, 18, 10, 10,
+        3, 34,  8, 19, 19, 19, 20, 20, 20, 79, 23, 23, 23, 23, 23, 60, 60,
+       24, 24, 24, 26, 26, 36, 26, 27, 27, 28, 29, 29, 29, 13, 70, 14, 41,
+       60, 24, 42, 75, 32, 16, 10, 33, 15, 37, 37, 36, 22, 38, 38, 38, 38,
+       39, 39, 39, 40, 40, 40, 40, 42, 43, 43, 43, 43, 46, 46, 46, 46, 46,
+       15, 46, 38, 27, 60, 60, 60, 78, 78, 36,  5, 15, 15, 53, 53, 53, 53,
+       22,  1, 34, 55,  5, 55, 67, 67, 36, 67, 67, 36, 57,  5, 41, 41, 60,
+       41, 60, 61, 61, 61, 61, 62,  1, 62,  1, 22, 76, 18, 70, 70, 70, 31,
+       65,  8,  8, 58, 66, 66, 66, 66, 67, 24, 24, 68, 16, 16, 69, 70, 41,
+       60,  1, 53, 19, 19, 19, 73, 74, 36, 42, 75,  1,  1, 75, 75, 78, 78,
+       77, 77, 77, 42, 36, 70, 80, 78, 78], dtype=int64)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+labels_onehot = np.array([mlb.transform([[i]]) for i in y_exp])
+true_labels = labels_onehot.reshape(labels_onehot.shape[0],n_elements)
+true_labels = tf.cast(true_labels, tf.int64)
+true_labels = tf.map_fn(tf.argmax, true_labels)
+
+true_labels
+\end{lstlisting}
+
+\begin{lstlisting}
+<tf.Tensor: shape=(213,), dtype=int64, numpy=
+array([ 0,  0,  0,  0,  0,  0,  1,  1,  1,  1,  1,  2,  3,  3,  4,  4,  4,
+        4,  4,  4,  6,  7,  8,  8,  9,  9,  5,  5,  5,  5, 11, 11, 12, 12,
+       12, 12, 13, 15, 15, 15, 16, 16, 17, 18, 18, 18, 18, 18, 18, 10, 10,
+       10, 10, 19, 19, 19, 19, 20, 20, 20, 21, 23, 23, 23, 23, 23, 24, 24,
+       25, 25, 25, 26, 26, 26, 26, 27, 27, 28, 29, 29, 29, 29, 31, 31, 31,
+       31, 31, 32, 32, 32, 30, 34, 33, 35, 37, 37, 37, 38, 38, 38, 38, 38,
+       39, 39, 39, 40, 40, 40, 40, 42, 43, 43, 43, 43, 44, 44, 46, 46, 46,
+       46, 46, 41, 48, 50, 50, 50, 51, 51, 51, 51, 52, 52, 53, 53, 53, 53,
+       49, 49, 54, 55, 55, 55, 56, 56, 56, 56, 57, 57, 57, 59, 59, 59, 60,
+       60, 60, 61, 61, 61, 61, 62, 62, 62, 62, 62, 63, 63, 64, 64, 64, 64,
+       65, 58, 58, 58, 66, 66, 66, 66, 67, 67, 67, 68, 68, 68, 69, 70, 70,
+       70, 71, 71, 72, 72, 72, 73, 74, 74, 74, 75, 75, 75, 75, 75, 78, 78,
+       77, 77, 77, 79, 79, 79, 80, 80, 80], dtype=int64)>
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.metrics import ConfusionMatrixDisplay
+
+cm = tf.math.confusion_matrix(true_labels, preds)
+
+disp = ConfusionMatrixDisplay(cm.numpy(), display_labels=elements)
+fig, ax = plt.subplots(figsize=(30,30))
+disp.plot(ax=ax, colorbar=False, cmap='Blues')
+plt.show()
+plt.savefig(r'C:\Users\kochk\Documents\Git_Repos\Github\ZHAW_deepxps_thesis\Figures\best_task_1_model_CM.png', dpi=300)
+\end{lstlisting}
+
+\includegraphics{f93899961c5d91a5573e9705e1213d633ffbefe4.png}
+
+\begin{lstlisting}[language=Python]
+import seaborn as sns
+sns.heatmap(cm.numpy(), fmt=‘’, cmap='Blues')
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+import sys
+sys.path.append('../../../../confusion_matrix/')
+import cf_matrix as cm_plot
+\end{lstlisting}
+
+\hypertarget{plots-of-losses}{%
+\subsection{Plots of losses}\label{plots-of-losses}}
+
+\begin{lstlisting}[language=Python]
+import glob
+import pickle
+import matplotlib.pyplot as plt
+# make nice plots of loss
+for historyfile in glob.glob(r'T:\GItHub_Repos\models\1\mixcont\top_layer\*\*\*.pkl'):
+    with open(historyfile, 'rb') as f:
+        history = pickle.load(f)
+    fig, ax = plt.subplots(2, figsize=(12,7))
+    ax[0].plot(history['loss'], label='train')
+    ax[0].plot(history['val_loss'], label='test')
+    ax[0].legend(['training loss', 'validation loss'])
+    ax[0].set_xlabel('Epoch')
+    ax[0].set_ylabel('Categorical Crossentropy Loss')
+    # ax[0].set_yscale('log')
+    ax[1].plot(history['categorical_accuracy'], label='train accuracy')
+    ax[1].plot(history['val_categorical_accuracy'], label='validation accuracy')
+    ax[1].legend(['training categorical accuracy', 'validation categorical accuracy'])
+    ax[1].set_xlabel('Epoch')
+    ax[1].set_ylabel('Categorical Accuracy')
+    ax[1].set_ylim(0,1)
+    fig.suptitle(historyfile.split('\\')[-1].split('.')[0])
+    plt.show()
+\end{lstlisting}
+
+\includegraphics{7a7027cfe696afe1553ed5133b927f833788f609.png}
+
+\includegraphics{9980192dd7accde7b79dccf6f96eb78fd04afc1d.png}
+
+\includegraphics{6fbbdaec2181c96dbadd47478b9499ec694b1d38.png}
+
+\includegraphics{41b9c989e2d33575bf264941589dddcbb77a1f5e.png}
+
+\includegraphics{4e872d18320d16cae1f8b8fc2ee5b2590083954d.png}
+
+\includegraphics{d668929ac178235031a074c2e28d8da376417de1.png}
