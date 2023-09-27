@@ -45,7 +45,7 @@ The best model to predict the top layer element was the Vision Transformer-Model
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Figures/best_task_1_model_loss.png}
+    \includegraphics[width=0.7\textwidth]{Figures/best_task_1_model_loss.png}
     \caption{Categorical crossentropy loss and crossentropy accuracy for the ViT model training on top-layer training data-labels}
     \label{fig:top_best_loss}
 \end{figure}
@@ -55,18 +55,18 @@ The best model to predict the top layer element was the Vision Transformer-Model
     \begin{subfigure}[b]{1\textwidth}
             \includegraphics[width=\textwidth]{Figures/attention_map_Li.png}
             \caption{Attention map (blue) for the Lithium spectrum (red) prediction}
-            \label{att:dy}
+            \label{att:Li}
     \end{subfigure}
     \begin{subfigure}[b]{1\textwidth}
             \includegraphics[width=\textwidth]{Figures/attention_map_Fe.png}
             \caption{Attention map (blue) for the experimental Iron spectrum (red) prediction}
-            \label{att:c}
+            \label{att:Fe}
     \end{subfigure}
     
     \begin{subfigure}[b]{1\textwidth}
             \includegraphics[width=\textwidth]{Figures/attention_map_Fe_Training.png}
             \caption{Attention map (blue) for the simulated Iron spectrum (red) prediction}
-            \label{att:c}
+            \label{att:FeSim}
     \end{subfigure}
 \caption{Attention maps of false top layer predictions}
 \end{figure}
@@ -76,7 +76,7 @@ The best model to predict the top layer element was the Vision Transformer-Model
 \begin{figure}[H]
         \centerline{\includegraphics[width=1.4\textwidth]{Figures/best_task_1_model_CM.png}}
     \centering
-    \caption{Confusion Matrix of Test-Data for best top-layer prediction}
+    \caption{Confusion natrix of test dataset for best top-layer prediction}
     \label{cm_cnn_1l}
 \end{figure}
 \end{center}
@@ -114,4 +114,22 @@ As depth profiling data is not readily available from public databases, the data
     \label{tab:acc_depth}
 \end{table}
 
+The test data contained seven spectra with the structure explained in \ref{exp_depth}. Each spectrum is evaluated with each model and the results are shown in Table 
 
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+        Model  &    \multicolumn{3}{|c|}{Al-Oxide}     & \multicolumn{4}{c}{Cu/Pd}            \\
+        \hline
+Ground truth   &       2   &   1.5   &  0   & 20   & 10    & 1     & 0                               \\
+\hline
+  CNN          &           &        &       &      &       &       &                                     \\
+CNN-DCT        &           &        &       &      &       &       &                                     \\
+CBAM           &           &        &       &      &       &       &                                     \\
+ViT            &           &        &       &      &       &       &                                     \\
+
+    \end{tabular}
+    \caption{Depth predictions and ground truth in nanometers for the seven test data spectra}
+    \label{tab:acc_depth}
+\end{table}

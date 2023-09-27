@@ -1,5 +1,5 @@
 \hypertarget{define-directories}{%
-\section{Define directories}\label{define-directories}}
+\section*{Define directories}\label{define-directories}}
 
 \begin{lstlisting}[language=Python]
 from sessa_py import Experiment, Layer
@@ -24,10 +24,10 @@ elements_sym = base.load_elem()
 \end{lstlisting}
 
 \hypertarget{build-experiments}{%
-\section{Build experiments}\label{build-experiments}}
+\section*{Build experiments}\label{build-experiments}}
 
 \hypertarget{experiments-for-permutations-of-elements-and-thicknesses}{%
-\subsection{Experiments for permutations of elements and
+\subsection*{Experiments for permutations of elements and
 thicknesses}\label{experiments-for-permutations-of-elements-and-thicknesses}}
 
 \begin{lstlisting}[language=Python]
@@ -39,7 +39,7 @@ perms = list(itertools.permutations(elements_sym, 2))
 \end{lstlisting}
 
 \hypertarget{separate}{%
-\subsection{Separate}\label{separate}}
+\subsection*{Separate}\label{separate}}
 
 \begin{lstlisting}[language=Python]
 # check if all files done and store not simulated files in a list
@@ -83,7 +83,7 @@ for entry in tqdm(perms):
 \end{lstlisting}
 
 \hypertarget{experiments-for-oxidates-with-and-without-carbon-traces}{%
-\subsection{Experiments for oxidates with and without carbon
+\subsection*{Experiments for oxidates with and without carbon
 traces}\label{experiments-for-oxidates-with-and-without-carbon-traces}}
 
 \begin{lstlisting}[language=Python]
@@ -163,7 +163,7 @@ for entry in tqdm(oxides):
 \end{lstlisting}
 
 \hypertarget{build-multi-layer-system-for-depth-profiling}{%
-\subsection{Build multi-layer system for
+\subsection*{Build multi-layer system for
 depth-profiling}\label{build-multi-layer-system-for-depth-profiling}}
 
 \begin{lstlisting}[language=Python]
@@ -226,7 +226,7 @@ for elems in tqdm(perms):
 \end{lstlisting}
 
 \hypertarget{check-if-all-files-done}{%
-\subsubsection{Check if all files done}\label{check-if-all-files-done}}
+\subsubsection*{Check if all files done}\label{check-if-all-files-done}}
 
 \begin{lstlisting}[language=Python]
 for elems in perms:
@@ -285,7 +285,7 @@ not_sim = pd.Series(not_sim).unique()
 \end{lstlisting}
 
 \hypertarget{one-element-layers}{%
-\subsection{One-element layers}\label{one-element-layers}}
+\subsection*{One-element layers}\label{one-element-layers}}
 
 \begin{lstlisting}[language=Python]
 for element in tqdm(elements_sym):
@@ -312,7 +312,7 @@ f'\\MODEL SAVE SPECTRA "{root_dir}\\data\\simulation_data\\one_layer\\{element}_
 \end{lstlisting}
 
 \hypertarget{mixture-compounds}{%
-\section{Mixture compounds}\label{mixture-compounds}}
+\section*{Mixture compounds}\label{mixture-compounds}}
 
 \begin{lstlisting}[language=Python]
 from base import get_combinations
@@ -333,7 +333,7 @@ for entry in tqdm(list(perms)[0]):
 \end{lstlisting}
 
 \hypertarget{visualize}{%
-\section{visualize}\label{visualize}}
+\section*{visualize}\label{visualize}}
 
 \begin{lstlisting}[language=Python]
 import matplotlib as mpl
