@@ -38,10 +38,13 @@ The categorical crossentropy loss function is used for multi-class and multi-lab
 Categorical Accuracy computes the correctly predicted label based on the argmax function (the highest prediction value) of one-hot encoded labels.
 \begin{equation}
 \label{cce}
--\sum_{c=1}^My_{o,c}\log_{n}(p_{o,c})
+\text{Categorical Cross-Entropy} = -\sum_{c=1}^My_{o,c}\log_{n}(p_{o,c})
 \end{equation}
-For problems where the labels are non-exclusive (multiple can be true) the mean squared error loss can be used. 
- 
+For problems where the labels are non-exclusive (multiple can be true) the mean squared error loss can be used. This is based on the equation \ref{eq:MSE}.
+ \begin{equation}
+ \label{eq:MSE}
+     \text{Mean Squared Error} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+ \end{equation}
  
 \subsubsection{Dense layers}
 What is often referred to as fully connected, dense, feed-forward neural network or Multilayer Perceptron describes a network consisting of solely fully connected layers. These layers are connected in an $n:m$ manner, where each node of a layer with $n$ nodes is connected with each node of another layer with $m$ nodes. 
