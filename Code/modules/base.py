@@ -1,8 +1,9 @@
 import json
 import numpy as np
+import config
 
 def load_elem_db():
-    return json.loads(open('../../elements.json').read())["elements"]
+    return json.loads(open(config.ELEMENTS_SIM_DIR).read())["elements"]
 
 def load_elem():
     return [elem["symbol"] for elem in load_elem_db()]
@@ -122,3 +123,9 @@ def one_hot_encode_concentrations(labels_and_values=[('Ar', 2), ('Si', 1), ('Mg'
 
 def pair_list_to_tuples(lst):
     return [(lst[i], lst[i + 1]) for i in range(0, len(lst), 2)]
+
+def concentration_label_to_elements_tuple(vector):
+    mlb = retreive_mlb_and_elements()[0]
+    elements = mlb.inverse_transform((vector>0).astype(int).reshape(1, 81))
+    concentrations = vector[vector > 0]
+    return elements, concentrations

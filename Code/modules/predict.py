@@ -131,5 +131,7 @@ def predict_from_array_h5(x: np.array, labels, shape, model):
         b = np.zeros_like(a)
         b[a.argmax()] = 1
         b = b.astype(int)
-        predicted_label[i] = (correct, mlb.inverse_transform(np.array([b])))
+        cce = tf.keras.losses.CategoricalCrossentropy()
+        loss = cce(mlb.transform([[labels[i]]]), predictions).numpy()
+        predicted_label[i] = (correct, mlb.inverse_transform(np.array([b])), loss)
     return predicted_label

@@ -1,11 +1,11 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
-from tensorflow.keras.layers import Layer, Dense, GlobalAveragePooling1D, GlobalMaxPooling1D, Reshape, Multiply, Add, Activation, Lambda, Conv1D, Concatenate
+from tensorflow.keras.layers import BatchNormalization, Layer, Dense, GlobalAveragePooling1D, GlobalMaxPooling1D, Reshape, Multiply, Add, Activation, Lambda, Conv1D, Concatenate
 from tensorflow.keras.models import Model
 import tensorflow.keras as keras
 
 
-def plot_and_save_history(name: str, history, model, save_path: str, subfolder: str):
+def plot_and_save_history(name: str, history, model, save_path: str, subfolder: str, plot_acc=True):
     import matplotlib.pyplot as plt
     import pickle
         
@@ -13,17 +13,17 @@ def plot_and_save_history(name: str, history, model, save_path: str, subfolder: 
     plt.plot(history.history['val_loss'])
     plt.legend(['loss', 'val_loss'])
     plt.xlabel('Epochs')
-    plt.savefig(f'{save_path}\loss_{name}.png', dpi=300)
-    pickle.dump(history.history, open(f'{save_path}\history_{name}.pkl', 'wb'))
-
-    plt.figure()
-    plt.plot(history.history['categorical_accuracy'])
-    plt.plot(history.history['val_categorical_accuracy'])
-    plt.legend(['top_categorical_accuracy', 'val_top_categorical_accuracy'])
-    plt.xlabel('Epochs')
-    plt.ylabel('Categorical Accuracy')
-    plt.ylim(0,1)
-    plt.savefig(f'{save_path}\\acc_{name}.png', dpi=300)
+    plt.savefig(f'{save_path}\\plots_data\\loss_{name}.png', dpi=300)
+    pickle.dump(history.history, open(f'{save_path}\\plots_data\\history_{name}.pkl', 'wb'))
+    if plot_acc:
+        plt.figure()
+        plt.plot(history.history['categorical_accuracy'])
+        plt.plot(history.history['val_categorical_accuracy'])
+        plt.legend(['top_categorical_accuracy', 'val_top_categorical_accuracy'])
+        plt.xlabel('Epochs')
+        plt.ylabel('Categorical Accuracy')
+        plt.ylim(0,1)
+        plt.savefig(f'{save_path}\\plots_data\\acc_{name}.png', dpi=300)
 
     model.save(f'{save_path}\\{subfolder}\\{name}.h5')
     return None
@@ -60,7 +60,6 @@ class ViTEmbeddings(tf.keras.layers.Layer):
 
         return embeddings
 
-
 class MLP(tf.keras.layers.Layer):
     def __init__(self, mlp_dim, out_dim=None, activation="gelu", dropout=0.0, **kwargs):
         super().__init__(**kwargs)
@@ -82,7 +81,6 @@ class MLP(tf.keras.layers.Layer):
         x = self.dense2(x)
         x = self.dropout(x, training=training)
         return x
-
 
 class Block(tf.keras.layers.Layer):
     def __init__(
@@ -128,7 +126,6 @@ class Block(tf.keras.layers.Layer):
         _, weights = self.attn(x, x, training=False, return_attention_scores=True)
         return weights
 
-
 class VisionTransformer(tf.keras.Model):
     def __init__(
         self,
@@ -143,6 +140,7 @@ class VisionTransformer(tf.keras.Model):
         sd_survival_probability=1.0,
         attention_bias=False,
         attention_dropout=0.0,
+        output_activation='softmax',
         *args,
         **kwargs,
     ):
@@ -165,7 +163,7 @@ class VisionTransformer(tf.keras.Model):
         ]
 
         self.norm = tf.keras.layers.LayerNormalization()
-        self.head = tf.keras.layers.Dense(num_classes, 'softmax')
+        self.head = tf.keras.layers.Dense(num_classes, output_activation)
         
 
     def call(self, inputs: tf.Tensor, training: bool = False) -> tf.Tensor:
@@ -181,7 +179,6 @@ class VisionTransformer(tf.keras.Model):
         for block in self.blocks[:-1]:
             x = block(x, training=False)
         return self.blocks[-1].get_attention_scores(x)
-
 
 class ChannelAttention(Layer):
     def __init__(self, filters, ratio, **kwargs):
@@ -223,15 +220,17 @@ class ChannelAttention(Layer):
     def from_config(cls, config):
         return cls(**config)
 
-
 class SpatialAttention(Layer):
     def __init__(self, kernel_size, **kwargs):
         super(SpatialAttention, self).__init__()
         self.kernel_size = kernel_size
 
     def build(self, input_shape):
-        self.conv1d = Conv1D(filters=1, kernel_size=self.kernel_size, strides=1, 
-                             padding='same', activation='sigmoid', kernel_initializer='he_normal', use_bias=False)
+        self.conv1d = Conv1D(filters=1, kernel_size=self.kernel_size,
+                             strides=1, padding='same', 
+                             activation='sigmoid',
+                             kernel_initializer='he_normal', 
+                             use_bias=False)
 
     def call(self, inputs):
         avg_pool = Lambda(lambda x: tf.keras.backend.mean(x, axis=2, keepdims=True))(inputs)
@@ -251,187 +250,74 @@ class SpatialAttention(Layer):
     def from_config(cls, config):
         return cls(**config)
     
+class CBAM(tf.keras.layers.Layer):
+    def __init__(self, num_filters, reduction_ratio=16, **kwargs):
+        super(CBAM, self).__init__()
+        self.num_filters = num_filters
+        self.reduction_ratio = reduction_ratio
+        self.channel_attention = ChannelAttention(num_filters, reduction_ratio)
+        self.spatial_attention = SpatialAttention(7)
+
+    def call(self, inputs):
+        channel_attention = self.channel_attention(inputs)
+        spatial_attention = self.spatial_attention(inputs)
+        x = tf.keras.layers.Multiply()([inputs, channel_attention])
+        x_2 = tf.keras.layers.Multiply()([inputs, spatial_attention])
+        x = tf.keras.layers.Add()([x, x_2])
+        return x
+
+    def get_config(self):
+        config = super(CBAM, self).get_config()
+        config.update({'num_filters': self.num_filters, 'reduction_ratio': self.reduction_ratio})
+        return config
+
+def build_1d_resnet_with_cbam(input_shape, num_classes, num_filters=64, res_block_num=3,
+                              output_activation='softmax',
+                              output_shape=None):
     
-"""
-DenseNet 1DCNN in Tensorflow-Keras
-Reference: Densely Connected Convolutional Networks [https://arxiv.org/abs/1608.06993]
-"""
-
-
-
-def Conv_1D_Block(x, model_width, kernel, strides):
-    # 1D Convolutional Block with BatchNormalization
-    x = tf.keras.layers.Conv1D(model_width, kernel, strides=strides, padding="same", kernel_initializer="he_normal")(x)
+    inputs = tf.keras.layers.Input(shape=input_shape)
+    
+    x = tf.keras.layers.Conv1D(filters=num_filters, kernel_size=7, padding='same')(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation('relu')(x)
+    
+    x = CBAM(num_filters)(x)
+    
+    # Residual blocks
+    for _ in range(res_block_num):
+        residual = x
+        x = Conv1D(filters=num_filters, kernel_size=3, padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Activation('relu')(x)
+        x = Conv1D(filters=num_filters, kernel_size=7, padding='same')(x)
+        x = BatchNormalization()(x)        
+        x = Activation('relu')(x)
+        x = Conv1D(filters=num_filters, kernel_size=21, padding='same')(x)
+        x = BatchNormalization()(x)
+        x = Add()([x, residual])
+        x = Activation('relu')(x)
+        
+        x = CBAM(num_filters)(x)
+    
+    # Global average pooling and output layer
+    x = tf.keras.layers.GlobalAveragePooling1D()(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
+    x = tf.keras.layers.BatchNormalization()(x)
+    x = tf.keras.layers.Dense(num_classes, activation=output_activation)(x)
+    outputs = tf.keras.layers.Reshape(output_shape)(x)
+    
+    model = tf.keras.models.Model(inputs, outputs)
+    return model
 
-    return x
-
-
-def stem(inputs, num_filters):
-    # Construct the Stem Convolution Group
-    # inputs : input vector
-    conv = Conv_1D_Block(inputs, num_filters, 7, 2)
-    if conv.shape[1] <= 2:
-        pool = tf.keras.layers.MaxPooling1D(pool_size=1, strides=2, padding="same")(conv)
-    else:
-        pool = tf.keras.layers.MaxPooling1D(pool_size=3, strides=2, padding="same")(conv)
-
-    return pool
-
-
-def conv_block(x, num_filters, bottleneck=True):
-    # Construct Block of Convolutions without Pooling
-    # x        : input into the block
-    # n_filters: number of filters
-    if bottleneck:
-        num_filters_bottleneck = num_filters * 4
-        x = Conv_1D_Block(x, num_filters_bottleneck, 1, 1)
-
-    out = Conv_1D_Block(x, num_filters, 3, 1)
-
-    return out
-
-
-def dense_block(x, num_filters, num_layers, bottleneck=True):
-    for i in range(num_layers):
-        cb = conv_block(x, num_filters, bottleneck=bottleneck)
-        x = tf.keras.layers.concatenate([x, cb], axis=-1)
-
-    return x
-
-
-def transition_block(inputs, num_filters):
-    x = Conv_1D_Block(inputs, num_filters, 1, 2)
-    if x.shape[1] <= 2:
-        x = tf.keras.layers.AveragePooling1D(pool_size=1, strides=2, padding="same")(x)
-    else:
-        x = tf.keras.layers.AveragePooling1D(pool_size=2, strides=2, padding="same")(x)
-
-    return x
-
-
-def classifier(inputs, class_number):
-    # Construct the Classifier Group
-    # inputs       : input vector
-    # class_number : number of output classes
-    out = tf.keras.layers.Dense(class_number, activation='softmax')(inputs)
-
-    return out
-
-
-def regressor(inputs, feature_number):
-    # Construct the Regressor Group
-    # inputs         : input vector
-    # feature_number : number of output features
-    out = tf.keras.layers.Dense(feature_number, activation='linear')(inputs)
-
-    return out
-
-
-class DenseNet:
-    def __init__(self, length, num_channel, num_filters, problem_type='Regression',
-                 output_nums=1, pooling='avg', dropout_rate=False, bottleneck=True):
-        self.length = length
-        self.num_channel = num_channel
-        self.num_filters = num_filters
-        self.problem_type = problem_type
-        self.output_nums = output_nums
-        self.pooling = pooling
-        self.dropout_rate = dropout_rate
-        self.bottleneck = bottleneck
-
-    def MLP(self, x):
-        if self.pooling == 'avg':
-            x = tf.keras.layers.GlobalAveragePooling1D()(x)
-        elif self.pooling == 'max':
-            x = tf.keras.layers.GlobalMaxPooling1D()(x)
-        # Final Dense Outputting Layer for the outputs
-        x = tf.keras.layers.Flatten(name='flatten')(x)
-        if self.dropout_rate:
-            x = tf.keras.layers.Dropout(self.dropout_rate, name='Dropout')(x)
-        outputs = tf.keras.layers.Dense(self.output_nums, activation='linear')(x)
-        if self.problem_type == 'Classification':
-            outputs = tf.keras.layers.Dense(self.output_nums, activation='softmax')(x)
-
-        return outputs
-
-    def DenseNet121(self):
-        inputs = tf.keras.Input((self.length, self.num_channel))  # The input tensor
-        stem_block = stem(inputs, self.num_filters)  # The Stem Convolution Group
-        Dense_Block_1 = dense_block(stem_block, self.num_filters * 2, 6, bottleneck=self.bottleneck)
-        Transition_Block_1 = transition_block(Dense_Block_1, self.num_filters)
-        Dense_Block_2 = dense_block(Transition_Block_1, self.num_filters * 4, 12, bottleneck=self.bottleneck)
-        Transition_Block_2 = transition_block(Dense_Block_2, self.num_filters)
-        Dense_Block_3 = dense_block(Transition_Block_2, self.num_filters * 8, 24, bottleneck=self.bottleneck)
-        Transition_Block_3 = transition_block(Dense_Block_3, self.num_filters)
-        Dense_Block_4 = dense_block(Transition_Block_3, self.num_filters * 16, 16, bottleneck=self.bottleneck)
-        outputs = self.MLP(Dense_Block_4)
-        # Instantiate the Model
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
-
-    def DenseNet161(self):
-        inputs = tf.keras.Input((self.length, self.num_channel))  # The input tensor
-        stem_block = stem(inputs, self.num_filters)  # The Stem Convolution Group
-        Dense_Block_1 = dense_block(stem_block, self.num_filters * 2, 6, bottleneck=self.bottleneck)
-        Transition_Block_1 = transition_block(Dense_Block_1, self.num_filters * 2)
-        Dense_Block_2 = dense_block(Transition_Block_1, self.num_filters * 4, 12, bottleneck=self.bottleneck)
-        Transition_Block_2 = transition_block(Dense_Block_2, self.num_filters * 4)
-        Dense_Block_3 = dense_block(Transition_Block_2, self.num_filters * 8, 36, bottleneck=self.bottleneck)
-        Transition_Block_3 = transition_block(Dense_Block_3, self.num_filters * 8)
-        Dense_Block_4 = dense_block(Transition_Block_3, self.num_filters * 16, 24, bottleneck=self.bottleneck)
-        outputs = self.MLP(Dense_Block_4)
-        # Instantiate the Model
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
-
-    def DenseNet169(self):
-        inputs = tf.keras.Input((self.length, self.num_channel))  # The input tensor
-        stem_block = stem(inputs, self.num_filters)  # The Stem Convolution Group
-        Dense_Block_1 = dense_block(stem_block, self.num_filters * 2, 6, bottleneck=self.bottleneck)
-        Transition_Block_1 = transition_block(Dense_Block_1, self.num_filters * 2)
-        Dense_Block_2 = dense_block(Transition_Block_1, self.num_filters * 4, 12, bottleneck=self.bottleneck)
-        Transition_Block_2 = transition_block(Dense_Block_2, self.num_filters * 4)
-        Dense_Block_3 = dense_block(Transition_Block_2, self.num_filters * 8, 32, bottleneck=self.bottleneck)
-        Transition_Block_3 = transition_block(Dense_Block_3, self.num_filters * 8)
-        Dense_Block_4 = dense_block(Transition_Block_3, self.num_filters * 16, 32, bottleneck=self.bottleneck)
-        outputs = self.MLP(Dense_Block_4)
-        # Instantiate the Model
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
-
-    def DenseNet201(self):
-        inputs = tf.keras.Input((self.length, self.num_channel))  # The input tensor
-        stem_block = stem(inputs, self.num_filters)  # The Stem Convolution Group
-        Dense_Block_1 = dense_block(stem_block, self.num_filters * 2, 6, bottleneck=self.bottleneck)
-        Transition_Block_1 = transition_block(Dense_Block_1, self.num_filters)
-        Dense_Block_2 = dense_block(Transition_Block_1, self.num_filters * 4, 12, bottleneck=self.bottleneck)
-        Transition_Block_2 = transition_block(Dense_Block_2, self.num_filters)
-        Dense_Block_3 = dense_block(Transition_Block_2, self.num_filters * 8, 48, bottleneck=self.bottleneck)
-        Transition_Block_3 = transition_block(Dense_Block_3, self.num_filters)
-        Dense_Block_4 = dense_block(Transition_Block_3, self.num_filters * 16, 32, bottleneck=self.bottleneck)
-        outputs = self.MLP(Dense_Block_4)
-        # Instantiate the Model
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
-
-    def DenseNet264(self):
-        inputs = tf.keras.Input((self.length, self.num_channel))  # The input tensor
-        stem_block = stem(inputs, self.num_filters)  # The Stem Convolution Group
-        Dense_Block_1 = dense_block(stem_block, self.num_filters * 2, 6, bottleneck=self.bottleneck)
-        Transition_Block_1 = transition_block(Dense_Block_1, self.num_filters * 2)
-        Dense_Block_2 = dense_block(Transition_Block_1, self.num_filters * 4, 12, bottleneck=self.bottleneck)
-        Transition_Block_2 = transition_block(Dense_Block_2, self.num_filters * 4)
-        Dense_Block_3 = dense_block(Transition_Block_2, self.num_filters * 8, 64, bottleneck=self.bottleneck)
-        Transition_Block_3 = transition_block(Dense_Block_3, self.num_filters * 8)
-        Dense_Block_4 = dense_block(Transition_Block_3, self.num_filters * 16, 48, bottleneck=self.bottleneck)
-        outputs = self.MLP(Dense_Block_4)
-        # Instantiate the Model
-        model = tf.keras.Model(inputs, outputs)
-
-        return model
+def custom_loss(y_true, y_pred): 
+    # Calculate the squared differences between y_i and y_hat_i
+    squared_diff = tf.square(y_true - y_pred)
+    
+    # Multiply each squared difference by y_i^2
+    weighted_squared_diff = tf.multiply(tf.square(y_true), squared_diff)
+    
+    # Sum the weighted squared differences over all elements
+    loss = tf.reduce_sum(weighted_squared_diff)
+    
+    return loss
