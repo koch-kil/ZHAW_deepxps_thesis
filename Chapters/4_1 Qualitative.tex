@@ -10,19 +10,18 @@ During the model development, it was obvious that we are prone to overfitting th
 \begin{table}[H]
     \centering
     \centerline{
-    \begin{tabular}{c|c|c|c|c|c|c}
-        Dataset & Layer & Model   & No. Parameters & Training set & Validation set & Test set*    \\
+    \begin{tabular}{c|c|c|c|c|c}
+         Layer & Model   & No. Parameters & Training set & Validation set & Test set*    \\
         \hline 
-        mixcont & top   & CNN     &  8.2 M        &    92.37      &    86.68 & 27.91       \\
-        (n=272k)&       & CNN-DCT &  12.3 M        &   91.34        &    86.58       & 14.42           \\
-                &       & CBAM    &  20.1 M        &  92.80       &    82.80       & 28.64          \\
-                &       & ViT     &  35.8 K        &    79.92     &    82.69       & \textbf{52.56}  \\
+        top   & CNN     &  8.2 M        &    92.37      &    \textbf{86.68} & 27.91       \\
+              & CNN-DCT &  12.3 M        &   91.34        &    86.58       & 14.42           \\
+              & CBAM    &  20.1 M        &  \textbf{92.80}       &    82.80       & 28.64          \\
+              & ViT     &  35.8 K        &    79.92     &    82.69       & \textbf{52.56}  \\
         \hdashline
-                & bot   & CNN     &   82.1 M       &\textbf{89.05}&   \textbf{79.64}    &     45.12      \\
-                &       & CNN-DCT &   12.3 M       &    85.39      &    79.39       &   50.23       \\
-                &       & CBAM    &   20.1 M        &    86.65     &    70.96     &       27.44    \\
-                &       & ViT     &   35.8 K      &     61.65     &      68.35    &  \textbf{57.21} \\
-
+         bot   & CNN     &   8.2 M       &\textbf{89.05}&   \textbf{79.64}    &     45.12      \\
+               & CNN-DCT &   12.3 M       &    85.39      &    79.39       &   50.23       \\
+               & CBAM    &   20.1 M        &    86.65     &    70.96     &       27.44    \\
+               & ViT     &   35.8 K      &     61.65     &      68.35    &  \textbf{57.21} \\
     \end{tabular}}
     \caption{Categorical accuracies, and number of parameters of the models in respect to dataset and sample layer
     *Test Dataset n=\nelementalspectra}
@@ -34,7 +33,7 @@ During the model development, it was obvious that we are prone to overfitting th
 The best model to predict the top layer element was the Vision Transformer-Model, with an accuracy on the test dataset of 52.56 \%. Figure \ref{fig:top_best_loss} shows the categorical crossentropy loss and categorical accuracy for the training (blue) and the validation (orange) datasets respectively. In the confusion matrix, we can see that in the test dataset, Iron (Fe) has been wrongly predicted as Lithium (Li) a total of 4 times, which are the most failures of any wrongly predicted elements. An approach would be to plot the attention of the model on Lithium and Iron spectrum data to investigate the reason behind. However, as shown in Figures \ref{att:Fe} and \ref{att:Li}, they overlap at a binding energy of 55 eV. This is a known overlap of the Li 1s and Fe 3p peaks. However, as the attention does not focus on this part for the Iron spectrum, it is not obvious why this faulty prediction was done. It suggests that the model lacks complexity as both cases overlap in the feature space. As the model only has 25.8k trainable parameters, this is very much possible. 
 
 
-\begin{figure}[H]
+\begin{figure}
     \centering
     \includegraphics[width=0.7\textwidth]{Figures/best_task_1_model_loss.png}
     \caption{Categorical crossentropy loss and crossentropy accuracy for the ViT model training on top-layer training data-labels}
@@ -67,7 +66,7 @@ The best model to predict the top layer element was the Vision Transformer-Model
 \begin{figure}[H]
         \centerline{\includegraphics[width=1.4\textwidth]{Figures/best_task_1_model_CM.png}}
     \centering
-    \caption{Confusion natrix of test dataset for best top-layer prediction}
+    \caption[width=1.4\textwidth]{Confusion natrix of test dataset for best top-layer prediction}
     \label{cm_cnn_1l}
 \end{figure}
 \end{center}
