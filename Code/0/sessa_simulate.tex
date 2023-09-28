@@ -42,28 +42,6 @@ perms = list(itertools.permutations(elements_sym, 2))
 \subsection*{Separate}\label{separate}}
 
 \begin{lstlisting}[language=Python]
-# check if all files done and store not simulated files in a list
-os.chdir(r'C:\Users\kochk\Documents\Git_Repos\Github\deep_xps\tasks\0\simulation')
-perms = list(itertools.permutations(elements_sym, 2))
-
-data_dir = '../../../data/simulation_data/depth_sep/'
-files = os.listdir(data_dir)
-not_sim = []
-sim = []
-
-for perm in perms:
-    for thickness in thicknesses:
-        if os.path.isfile(data_dir+f'{perm[0]}_{perm[1]}_{thickness}_separate_spectra.spcreg1.spc'):
-            sim.append([perm, thickness])
-        else:
-            not_sim.append(perm)
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-len(not_sim)
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
 exp_dir = 'sep_NO'
 data_dir = rf'C:\Users\kochk\Documents\Git_Repos\Github\deep_xps\data\simulation_data\{exp_dir}'
 
@@ -225,64 +203,6 @@ for elems in tqdm(perms):
                 f.simulate()
 \end{lstlisting}
 
-\hypertarget{check-if-all-files-done}{%
-\subsubsection*{Check if all files done}\label{check-if-all-files-done}}
-
-\begin{lstlisting}[language=Python]
-for elems in perms:
-    for thickness in thicknesses:
-        path = not(os.path.isfile('..\data\simfiles\depth_CO_sep\{elems[0]}_{elems[1]}_{thickness}.txt'))
-    if path:
-        print(f'..\data\simfiles\depth_CO_sep\{elems[0]}_{elems[1]}_{thickness}.txt')
-        break
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-[(i, os.path.isfile(f'C:/Users/kochk/Documents/Git_Repos/Github/deep_xps/data/simfiles/depth_CO_sep_new/{elems[0]}_{elems[1]}.txt')) 
- for i, elems in enumerate(perms) 
- if not os.path.isfile(f'C:/Users/kochk/Documents/Git_Repos/Github/deep_xps/data/simfiles/depth_CO_sep_new/{elems[0]}_{elems[1]}.txt')]
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-for i, elems in enumerate(perms):
-    for thickness in thicknesses:
-        if not os.path.isfile(f'C:/Users/kochk/Documents/Git_Repos/Github/deep_xps/data/simfiles/depth_CO_sep_new/{elems[0]}_{elems[1]}_{thickness}.txt'):
-            print(i, elems, thickness)
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-# remove files
-path='../data/simulation_data/depth_CO_sep/'
-for file in os.listdir(path):
-    if len(file.split('_')) == 6:
-        os.remove(os.path.join(path,file))
-        print(f'{file} removed.')
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-os.chdir(r'C:\Users\kochk\Documents\Git_Repos\Github\deep_xps\tasks\0\simulation')
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-# check if all files done and store not simulated files in a list
-
-data_dir = '../../../data/simulation_data/grad_NO/'
-files = os.listdir(data_dir)
-not_sim = []
-sim = []
-etching_rates = [100, 90, 80, 70, 60]
-for perm in perms:
-    for etching in etching_rates:
-        if os.path.isfile(data_dir+f'{perm[0]}_{perm[1]}_{etching}_etching_spectra.spcreg1.spc'):
-            sim.append([perm, etching])
-        else:
-            not_sim.append(perm)
-not_sim = [f for f in not_sim if not "Xe" in f]
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-not_sim = pd.Series(not_sim).unique()
-\end{lstlisting}
 
 \hypertarget{one-element-layers}{%
 \subsection*{One-element layers}\label{one-element-layers}}
