@@ -11,18 +11,26 @@ From all experimental data, $\nmultispectra$ elemental spectra were used for the
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c|c|c|c|c}
-       Dataset & Model   & No. Parameters & Validation Dataset*  & Test Dataset*    \\
+       Dataset & Model   & No. Parameters & Training dataset & Validation dataset*  & Test dataset*    \\
         \hline
-        multi  & CNN     &                &        \%             &               \% \\
-               & CNN-DCT &                &       \%              &                \% \\
-               & CBAM    &                &       \%              &                \% \\
-               & ViT     &                &       \%              &                \% \\
+        multi  & CNN     &   9.1 M        &     35.5       &   25.95                 &  1.92      \\
+               & CNN-DCT &  35.3 M        &    13.61          &    14.16            &    3.83   \\
+               & CBAM    & 28.2 M         &    23.32         &    14.94             &  2.68   \\ % CBAM_512_3_ES_MAE_4
+               & ViT     &   35.3 M     &    33.81       &      34.86    &   2.68        \\
     \end{tabular}
     \caption{Number of parameters and threshold accuracy of the models}
     \label{tab:acc_quant}
 \end{table}
 
-As the threshold accuracy represents the percentage of elements with >10\% proportional content correctly quantified within a $\pm$10\% relative margin, it can be well compared to a novice researchers result. With an  
+As the threshold accuracy represents the percentage of elements with >10\% proportional content correctly quantified within a $\pm$10\% relative margin, it can be well compared to an experienced researchers result. With a maximum threshold accuracy of 3.83\% however, we are far off a good result for our best model. The full prediction mapped as heatmap is shown in Figure \ref{fig:multi_best_model}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/cnn_dct_mae_32F_multi_best_model_pred.png}
+    \caption{The predictions of the best performing model on experimental multi-component data}
+    \label{fig:multi_best_model}
+\end{figure}
+
 In contrast to previous studies on deep-learning assisted quantitative XPS analysis \cite{drera_deep_2019}, no relative sensitivity factors were applied in this approach. Furthermore, a significantly smaller training dataset of 30k versus the 100k which were used in their work. Lastly, the test data spectra they used were collected in experimental conditions and the training dataset was simulated according to the known conditions.
 
 % plot visual attention feature
