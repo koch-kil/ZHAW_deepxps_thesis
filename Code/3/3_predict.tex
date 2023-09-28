@@ -1,0 +1,516 @@
+\hypertarget{load-models-and-predict-the-dataset}{%
+\subsection{Load models and predict the
+dataset}\label{load-models-and-predict-the-dataset}}
+
+\begin{lstlisting}[language=Python]
+import sys
+import json
+import gc
+import os
+import glob
+import pickle
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import tensorflow_addons as tfa
+from tensorflow import keras
+from tensorflow.keras import Model, layers
+from sklearn.preprocessing import MultiLabelBinarizer
+from numba import cuda
+
+sys.path.append('../../modules') # add own modules
+import preprocess, predict, functions_tf, base
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+mlb, elements = base.retreive_mlb_and_elements()
+n_elements = len(elements)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+with open('../../data/test_data/Selected_Spectra/experimental_data_multi.pkl', 'rb') as f:
+    x, y = pickle.load(f)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+modeldir = r"T:\GItHub_Repos\models\3\multi"
+for model in os.listdir(modeldir):
+    if model.endswith('.h5'):
+        print(model)
+        print(os.path.join(modeldir, model))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+import sys
+import os
+sys.path.append('../../modules/')
+from functions_tf import ChannelAttention, SpatialAttention, CBAM
+import tensorflow.keras as keras
+import gc
+
+for root, folder, filename in os.walk(modeldir):
+    for file in filename:
+        if file.endswith('.h5'):
+            gc.collect()
+            MODELPATH = os.path.join(root, file)
+            print(file)
+            if 'CBAM' in MODELPATH:
+                model = keras.models.load_model(MODELPATH, custom_objects={'ChannelAttention': ChannelAttention,
+                                                                           'SpatialAttention': SpatialAttention,
+                                                                           'CBAM': CBAM})
+            else:
+                continue
+                model = keras.models.load_model(MODELPATH)
+            predictions = model.predict(x.reshape((x.shape[0],1,1024)), verbose=1)
+            mae = np.array([abs(k[0]- y[i]) for i, k in enumerate(predictions)]).mean()
+            print(mae)
+            
+\end{lstlisting}
+
+\begin{lstlisting}
+CBAM_4_1024_BN_KS3_7_21_ES_MAE.h5
+2/2 [==============================] - 2s 136ms/step
+0.013249637140170226
+cnn_32F_3_7_17_27_3_5_21_37_BN.h5
+cnn_dct_mae.h5
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+plt.imshow(np.array([abs(k- y[i]) for i, k in enumerate(predictions)]))
+\end{lstlisting}
+
+\begin{lstlisting}
+<matplotlib.image.AxesImage at 0x183a3445b20>
+\end{lstlisting}
+
+\includegraphics{50e06011d4545535cb22980ff5d42533563434ff.png}
+
+\begin{lstlisting}[language=Python]
+labels = [base.concentration_label_to_elements_tuple(i) for i in y]
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+fig, ax = plt.subplots(2, 1, figsize=(20,10), sharex=True, layout='tight')
+ax[0].imshow(predictions)
+ax[1].imshow(y)
+ax[1].sharex(ax[0])
+plt.show()
+\end{lstlisting}
+
+\includegraphics{0fa5fbdb39f01d8b7b324640baf04a5a2630e75b.png}
+
+\begin{lstlisting}[language=Python]
+for i in range(47):
+    print(labels[i])
+    plt.plot(predictions[i])
+    plt.plot(y[i])
+    plt.legend(['pred', 'exp'])
+    plt.show()
+    print(abs(predictions[i]- y[i]).sum())
+\end{lstlisting}
+
+\begin{lstlisting}
+([('Ag', 'S')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{3a0953f03373cc5c159a9e770c6d93e707e03fa5.png}
+
+\begin{lstlisting}
+1.9868642524434106
+([('Al', 'O')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{10f796ea6b59c15d51562ddc5c104863ed2efc10.png}
+
+\begin{lstlisting}
+1.9999999999077678
+([('Al', 'O')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{dcd9b6aac94a46cc728966a988d6499a069362be.png}
+
+\begin{lstlisting}
+1.9998263326240249
+([('Al', 'O')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{dff9cd726e5f399c727771b0d1317a718da6c9db.png}
+
+\begin{lstlisting}
+1.9799713788466988
+([('Al', 'O')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{10f796ea6b59c15d51562ddc5c104863ed2efc10.png}
+
+\begin{lstlisting}
+1.9999999999077678
+([('Al', 'O')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{367e38bc74375fd8f28f6aacb7f6579d68511de9.png}
+
+\begin{lstlisting}
+1.9996177751118012
+([('As', 'S')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{8a111d2ba5551678fe28a85aa915bf6ca5851c93.png}
+
+\begin{lstlisting}
+1.9763717272455295
+([('As', 'S')], array([0.4, 0.6]))
+\end{lstlisting}
+
+\includegraphics{1e23e60e253d0956f815dc8a6299516a52ef4152.png}
+
+\begin{lstlisting}
+1.9952749138155408
+([('Au', 'Cu')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{1456d4bfefbf6222bea632a6481057f4eaa8d1d9.png}
+
+\begin{lstlisting}
+1.997123447499007
+([('Au', 'Cu')], array([0.25, 0.75]))
+\end{lstlisting}
+
+\includegraphics{2c7acb309a9fcb531866473ff0b98473f282aed9.png}
+
+\begin{lstlisting}
+1.9981813588969999
+([('Au', 'Cu')], array([0.75, 0.25]))
+\end{lstlisting}
+
+\includegraphics{ed3fb4ec9f869945453e0461a74fe9c4e5f5bf9e.png}
+
+\begin{lstlisting}
+1.9881798812557463
+([('Ba', 'O', 'S')], array([0.16666667, 0.66666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{b6f5e9fdb5bd1fa7ee8db5d48ce7bc504a876f0f.png}
+
+\begin{lstlisting}
+1.999971342251059
+([('Ba', 'O', 'Ti')], array([0.16666667, 0.66666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{147a5472cca42e0e4e724fff28006c9035e696bc.png}
+
+\begin{lstlisting}
+1.9999987596576072
+([('Ba', 'O', 'Zr')], array([0.16666667, 0.66666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{e5dce6a29d197105b429df3f125020badcd73f21.png}
+
+\begin{lstlisting}
+1.9999990419032743
+([('B', 'N')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{34fce8dd156ad2b35955a972be39daa314e5e242.png}
+
+\begin{lstlisting}
+1.9969364803841927
+([('C', 'Ca', 'O')], array([0.2, 0.2, 0.6]))
+\end{lstlisting}
+
+\includegraphics{050cba1450abdff3e5af933088ed21d302822357.png}
+
+\begin{lstlisting}
+1.9036747666295355
+([('Ca', 'F')], array([0.33333333, 0.66666667]))
+\end{lstlisting}
+
+\includegraphics{883e81122aaa58480ecaf52ade241786ecd1715e.png}
+
+\begin{lstlisting}
+1.9999004121167407
+([('Ca', 'F')], array([0.33333333, 0.66666667]))
+\end{lstlisting}
+
+\includegraphics{a22d292e2ea1fb93ae1d8e58b53fc1e2febd5216.png}
+
+\begin{lstlisting}
+1.9999230314005911
+([('Ca', 'F')], array([0.33333333, 0.66666667]))
+\end{lstlisting}
+
+\includegraphics{df80a033de1cee650e06b7086687e7bde1bc995a.png}
+
+\begin{lstlisting}
+1.9999997190575607
+([('Ca', 'O', 'Ti')], array([0.2, 0.6, 0.2]))
+\end{lstlisting}
+
+\includegraphics{c60539e40449e092254e3182f70c01b969819207.png}
+
+\begin{lstlisting}
+1.9155835769697376
+([('Ca', 'O', 'W')], array([0.16666667, 0.66666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{c001be56c0b81244bbed01b62e4bfc5549ddd4dc.png}
+
+\begin{lstlisting}
+1.7888600009018771
+([('Ca', 'F', 'O', 'P')], array([0.07692308, 0.11538462, 0.57692308, 0.23076923]))
+\end{lstlisting}
+
+\includegraphics{c51e8e90c36cd20ccc8dd1e255237d3abcd487b9.png}
+
+\begin{lstlisting}
+1.8457774816677452
+([('C', 'Cu', 'O')], array([0.14285714, 0.14285714, 0.71428571]))
+\end{lstlisting}
+
+\includegraphics{33e5f6064136f6016d7de184796af0e8ec608c8b.png}
+
+\begin{lstlisting}
+1.9994356685793377
+([('Fe', 'S')], array([0.33333333, 0.66666667]))
+\end{lstlisting}
+
+\includegraphics{6fb76f017cdebb710de0241d1e75581fb3b38db7.png}
+
+\begin{lstlisting}
+2.000000001672764
+([('Al', 'Fe', 'O', 'Si')], array([0.1 , 0.15, 0.6 , 0.15]))
+\end{lstlisting}
+
+\includegraphics{9f09436f584d23ecc5606cb83f4041384d7fdd0f.png}
+
+\begin{lstlisting}
+1.9875939611738431
+([('Hg', 'S')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{dbf65e7edef2e6efd3d4bd45264cd86d76dbd824.png}
+
+\begin{lstlisting}
+1.9723408207501052
+([('Al', 'Mg', 'O')], array([0.28571429, 0.14285714, 0.57142857]))
+\end{lstlisting}
+
+\includegraphics{81ff3051b57c848ee755f231b60029a468f86e24.png}
+
+\begin{lstlisting}
+1.9887921771846777
+([('Al', 'Mg', 'O', 'Si')], array([0.08695652, 0.13043478, 0.52173913, 0.26086957]))
+\end{lstlisting}
+
+\includegraphics{3b41bc75999cca1a26005091297aacd23a209826.png}
+
+\begin{lstlisting}
+1.9761209053513085
+([('C', 'Mn', 'O')], array([0.2, 0.2, 0.6]))
+\end{lstlisting}
+
+\includegraphics{fa88bb694330aa357ea9d597a04351341c2b37a0.png}
+
+\begin{lstlisting}
+1.9999898354187469
+([('Na', 'O', 'Si')], array([0.16666667, 0.58333333, 0.25      ]))
+\end{lstlisting}
+
+\includegraphics{6d1f3e778dbbfbcc9463c5cea52474130d60cbbc.png}
+
+\begin{lstlisting}
+1.9997539745764357
+([('C', 'Si')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{b09b14bce46bb3e4575819dcd46bc8b45e80d3b4.png}
+
+\begin{lstlisting}
+1.999796922047807
+([('O', 'Si')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{b4a0e58e1993ce25cd734cd8f6f074b0d1ae6878.png}
+
+\begin{lstlisting}
+1.9993709052378108
+([('O', 'Si')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{d5d166f4a92d0ee6b95dfba5bddae1460f666668.png}
+
+\begin{lstlisting}
+1.9998562441033023
+([('O', 'Si')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{04eeb85b8d8ee44d4e2cfdc777a27300fd6ae56a.png}
+
+\begin{lstlisting}
+1.9994007058800207
+([('O', 'Si')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{cf99b467caf3931e6aa8571f62b2a9dacd08a838.png}
+
+\begin{lstlisting}
+1.9981499132366025
+([('O', 'Si')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{1e942837fe3e09ba72daf42b0f0d84b80612e6fe.png}
+
+\begin{lstlisting}
+1.999590450979781
+([('O', 'Sr', 'Ti')], array([0.66666667, 0.16666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{6e159f54d3d20375ee2225cf6d794d1f6f6edab8.png}
+
+\begin{lstlisting}
+1.9981429609326398
+([('O', 'Sr', 'Zr')], array([0.66666667, 0.16666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{5785273d0d8142624282af1057ce94342cb7e81c.png}
+
+\begin{lstlisting}
+1.9562294807412854
+([('O', 'Ta')], array([0.71428571, 0.28571429]))
+\end{lstlisting}
+
+\includegraphics{11fb74683097802a1c6724e9b3d17a7419886507.png}
+
+\begin{lstlisting}
+1.5840545910235733
+([('N', 'Ti')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{fd8f483025deba64d9e5d38b90e4dc06b3724810.png}
+
+\begin{lstlisting}
+1.9999999682644374
+([('N', 'Ti')], array([0.5, 0.5]))
+\end{lstlisting}
+
+\includegraphics{b82e612e5d6c4cbae3d84fffd9187d5616b26038.png}
+
+\begin{lstlisting}
+1.9999539025913173
+([('O', 'Ti')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{e781c32468e1570f2cd03393ebfc58276175880b.png}
+
+\begin{lstlisting}
+1.9999582562789158
+([('O', 'Ti')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{363075e1ba4e7edbf3491815dcd2aab86a5c5615.png}
+
+\begin{lstlisting}
+1.9999797692200634
+([('O', 'Ti')], array([0.66666667, 0.33333333]))
+\end{lstlisting}
+
+\includegraphics{984dd3ee1bd95e727d7d4b5c780b1c7352708bb1.png}
+
+\begin{lstlisting}
+1.999997358604719
+([('O', 'Si', 'Ti')], array([0.66666667, 0.16666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{60fed55a3df0540b3f563e44deef33bc7def1995.png}
+
+\begin{lstlisting}
+1.9985513831692288
+([('O', 'P', 'Y')], array([0.66666667, 0.16666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{a44d2a8429ddfd9485dccba325b0322056bb54a6.png}
+
+\begin{lstlisting}
+1.9589801067748454
+([('O', 'Si', 'Zr')], array([0.66666667, 0.16666667, 0.16666667]))
+\end{lstlisting}
+
+\includegraphics{88e6e9ef03888bd80c9e9c8a9589a639a6d71913.png}
+
+\begin{lstlisting}
+1.9326773388911533
+\end{lstlisting}
+
+\hypertarget{vit}{%
+\subsubsection{VIT}\label{vit}}
+
+\begin{lstlisting}[language=Python]
+from functions_tf import VisionTransformer
+
+vit = VisionTransformer(
+    patch_size=16,
+    hidden_size=1024,
+    depth=4,
+    num_heads=6,
+    mlp_dim=512,
+    num_classes=81,
+    sd_survival_probability=0.8,
+)
+vit.build(input_shape=(None, 1024, 1))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+vit.load_weights(r'T:\GItHub_Repos\models\depth\vit_91+\vit_weights.h5')
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+x_exp, y_exp = [df.T.values,
+                df.columns.map(lambda x: x.split('_')[0]).values] # top layer
+predictions = predict.predict_from_array(x_exp, y_exp, shape=(x_exp.shape[0], 1024,1), model=vit)
+acc = np.array([i[0] for i in predictions]).sum() / len(predictions)
+print(f'Accuracy: {acc}')
+\end{lstlisting}
+
+\begin{lstlisting}
+1/1 [==============================] - 3s 3s/step
+Accuracy: 0.3004694835680751
+\end{lstlisting}
+
+\hypertarget{confusion-matrix}{%
+\subsection{Confusion matrix}\label{confusion-matrix}}
+
+\begin{lstlisting}[language=Python]
+import tensorflow as tf
+
+model = keras.models.load_model(r'T:\GItHub_Repos\models\top_layer\simple_cnn_dct_top_layer.h5')
+predictions = model.predict(x_exp.reshape(x_exp.shape[0], 1,1024))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+preds = predictions.reshape(predictions.shape[0], n_elements)
+preds = tf.cast(preds, tf.float64)
+preds = np.array([tf.argmax(i) for i in preds])
+preds
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+labels_onehot = np.array([mlb.transform([[i]]) for i in y_exp])
+true_labels = labels_onehot.reshape(labels_onehot.shape[0],n_elements)
+true_labels = tf.cast(true_labels, tf.int64)
+true_labels = tf.map_fn(tf.argmax, true_labels)
+
+true_labels
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.metrics import ConfusionMatrixDisplay
+
+cm = tf.math.confusion_matrix(true_labels, preds)
+
+disp = ConfusionMatrixDisplay(cm.numpy(), display_labels=elements)
+fig, ax = plt.subplots(figsize=(30,30))
+disp.plot(ax=ax)
+plt.show()
+plt.savefig('confusion_matrix.png', dpi=300, bbox_inches='tight')
+\end{lstlisting}

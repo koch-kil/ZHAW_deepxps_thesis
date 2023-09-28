@@ -1,0 +1,261 @@
+\hypertarget{load-models-and-predict-the-dataset}{%
+\subsection{Load models and predict the
+dataset}\label{load-models-and-predict-the-dataset}}
+
+\begin{lstlisting}[language=Python]
+import sys
+sys.path.append('../../modules/')
+import os
+import gc
+import base
+import json
+import pickle
+import predict
+import numpy as np
+import pandas as pd
+import functions_tf
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import tensorflow.keras as keras
+from sklearn.preprocessing import MultiLabelBinarizer
+from functions_tf import ChannelAttention, SpatialAttention
+
+mlb, elements = base.retreive_mlb_and_elements()
+n_elements = 5
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+df = pd.read_pickle('../../data/depth_profile.pkl')
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+top_layer_modeldir = r"T:\GItHub_Repos\models\2\depth"
+for model in os.listdir(top_layer_modeldir):
+    if model.endswith('.h5'):
+        print(model)
+        print(os.path.join(top_layer_modeldir, model))
+\end{lstlisting}
+
+\begin{lstlisting}
+vit_32_1024_8_6_128_weights.h5
+T:\GItHub_Repos\models\2\depth\vit_32_1024_8_6_128_weights.h5
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+def angstrom_to_label(angstrom):
+    if angstrom < 0:
+        return 0.0
+    elif angstrom >= 100:
+        return 1.0
+    else:
+        mapped_value = angstrom / 100.0
+        return min(mapped_value, 1.0)
+
+def weighted_sum(predicted_probabilities):
+    '''transform the predicted probabilities into a single value'''
+    return sum(p * n for p, n in zip(predicted_probabilities, [1,2,3,4,5]))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+predictions[0][0]
+\end{lstlisting}
+
+\begin{lstlisting}
+array([0.9380241 , 0.00763549, 0.01659887, 0.01686267, 0.02087895],
+      dtype=float32)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+for i in predictions:
+    plt.plot(i[0])
+\end{lstlisting}
+
+\includegraphics{c9be8128acd8b34ca97a721c986c9a2a7d78dc43.png}
+
+\begin{lstlisting}[language=Python]
+historyfile
+\end{lstlisting}
+
+\begin{lstlisting}
+'T:\\GItHub_Repos\\models\\2\\depth\\plots_data\\history_CNN_32F_3_5_16F_17_27_47_DCT_8F_.pkl'
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+import sys
+import os
+sys.path.append('../../modules/')
+from functions_tf import ChannelAttention, SpatialAttention, GlobalAveragePooling1D
+import tensorflow.keras as keras
+import gc
+x_exp, y_exp = [df.T.values,
+                df.columns.map(lambda x: x.split('_')[2]).map(int).map(angstrom_to_label)]
+
+for root, folder, filename in os.walk(top_layer_modeldir):
+    for file in filename:
+        if file.endswith('.h5') and not 'vit' in file.lower():
+            gc.collect()
+            MODELPATH = os.path.join(root, file)
+            print(file)
+            if 'CBAM' in MODELPATH:
+                model = keras.models.load_model(MODELPATH, custom_objects={'ChannelAttention': ChannelAttention, 'SpatialAttention': SpatialAttention, 'CBAM': functions_tf.CBAM})
+            else:
+                model = keras.models.load_model(MODELPATH)
+            predictions = model.predict(x_exp.reshape(x_exp.shape[0], 1, 1024))
+            pr = [(round(weighted_sum(i[0]), 2) , df.columns[k])for k, i in enumerate(predictions)]
+            print(pr)
+            trainable_vars_N = np.sum([np.prod(v.shape) for v in model.trainable_variables])
+            print(f'Number of trainable variables: {trainable_vars_N}')
+            historyfile = os.path.join(PLOTSDIR, str('history_'+file.split('.')[0]+'.pkl'))
+            if os.path.exists(historyfile):
+                with open(historyfile, 'rb') as f:
+                    history = pickle.load(f)
+                print('Training set: \t', round(history['categorical_accuracy'][-1]*100, 2), '%')
+                print('Valid. set: \t',round(history['val_categorical_accuracy'][-1]*100, 2), '%')
+\end{lstlisting}
+
+\begin{lstlisting}
+CBAM_2Blocks_512F_bs2048.h5
+1/1 [==============================] - 0s 190ms/step
+[(2.23, 'Al_Al_100_separate'), (2.6, 'CCO_Al_20_separate'), (2.01, 'Cu_Cu_100_separate'), (2.0, 'Cu_Pd_10_separate'), (2.01, 'Cu_Pd_50_separate'), (2.1, 'O_Al_15_separate'), (2.01, 'Pd_Pd_100_separate')]
+Number of trainable variables: 40131745
+Training set: 	 46.65 %
+Valid. set: 	 39.19 %
+cnn_32F_3_7_17_27_47_LRELU_1024_BN.h5
+1/1 [==============================] - 0s 106ms/step
+[(2.12, 'Al_Al_100_separate'), (2.29, 'CCO_Al_20_separate'), (2.01, 'Cu_Cu_100_separate'), (2.0, 'Cu_Pd_10_separate'), (2.01, 'Cu_Pd_50_separate'), (2.03, 'O_Al_15_separate'), (3.0, 'Pd_Pd_100_separate')]
+Number of trainable variables: 8174189
+Training set: 	 50.75 %
+Valid. set: 	 42.66 %
+simple_cnn_vanilla_depth.h5
+1/1 [==============================] - 0s 124ms/step
+[(1.17, 'Al_Al_100_separate'), (1.28, 'CCO_Al_20_separate'), (1.05, 'Cu_Cu_100_separate'), (1.03, 'Cu_Pd_10_separate'), (1.04, 'Cu_Pd_50_separate'), (1.16, 'O_Al_15_separate'), (1.04, 'Pd_Pd_100_separate')]
+Number of trainable variables: 83421549
+CNN_32F_3_5_16F_17_27_47_DCT_8F_3_5_7_21.h5
+1/1 [==============================] - 0s 151ms/step
+[(3.16, 'Al_Al_100_separate'), (4.08, 'CCO_Al_20_separate'), (2.36, 'Cu_Cu_100_separate'), (2.04, 'Cu_Pd_10_separate'), (2.22, 'Cu_Pd_50_separate'), (3.31, 'O_Al_15_separate'), (3.74, 'Pd_Pd_100_separate')]
+Number of trainable variables: 12244861
+Training set: 	 38.06 %
+Valid. set: 	 37.24 %
+\end{lstlisting}
+
+\hypertarget{vit}{%
+\subsubsection{VIT}\label{vit}}
+
+\begin{lstlisting}[language=Python]
+for pr in predictions:
+    plt.plot(pr)
+\end{lstlisting}
+
+\includegraphics{580ccbcd3a24535d3b8bfeaace53e1d67e218d25.png}
+
+\begin{lstlisting}[language=Python]
+PLOTSDIR= r"T:\GItHub_Repos\models\2\depth\plots_data"
+vitdir = r"T:\GItHub_Repos\models\2\depth\VIT"
+
+x_exp, y_exp = [df.T.values,
+                df.columns.map(lambda x: x.split('_')[2]).map(int).map(angstrom_to_label)]
+
+for file in os.listdir(vitdir):
+    if 'vit' not in file:
+        continue
+    params = file.split('_')
+    print(f'going for {file}')
+    print(params)
+    from functions_tf import VisionTransformer
+
+    vit = VisionTransformer(
+        patch_size=int(params[1]),
+        hidden_size=int(params[2]),
+        depth=int(params[3]),
+        num_heads=int(params[4]),
+        mlp_dim=int(params[5]),
+        num_classes=5,
+        sd_survival_probability=1,
+        dropout=0.1,
+        attention_dropout=0.1
+    )
+    vit.build(input_shape=(None, 1024, 1))
+    vit.load_weights(os.path.join(vitdir,file))
+    
+    predictions = vit.predict(x_exp.reshape(x_exp.shape[0], 1024, 1))
+    pr = [(round(weighted_sum(i), 2) , df.columns[k])for k, i in enumerate(predictions)]
+    print(pr)
+    trainable_vars_N = np.sum([np.prod(v.shape) for v in vit.trainable_variables])
+    print(f'Number of trainable variables: {trainable_vars_N}')
+    historyfile = os.path.join(PLOTSDIR, str('history_'+file.split('.')[0][:-8]+'.pkl'))
+    if os.path.exists(historyfile):
+        with open(historyfile, 'rb') as f:
+            history = pickle.load(f)
+        print('Training set: \t', round(history['categorical_accuracy'][-1]*100, 2), '%')
+        print('Valid. set: \t',round(history['val_categorical_accuracy'][-1]*100, 2), '%')
+    print(f'Test set:\t {round(acc*100, 2)}%')
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+for i in predictions:
+    plt.plot(i)
+\end{lstlisting}
+
+\includegraphics{e8e225ef1190837dc8b9881d51e5e7d818c44984.png}
+
+\begin{lstlisting}[language=Python]
+import pickle
+with open('../../data/training_data/2/dataset_depth.pkl', 'rb') as f:
+    x = pickle.load(f)
+    
+print(x['name'])
+x_train = x['x_train']
+y_train = x['y_train']
+x_test = x['x_test']
+y_test = x['y_test']
+\end{lstlisting}
+
+\begin{lstlisting}
+depth profile labels
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+y_train[0]
+\end{lstlisting}
+
+\begin{lstlisting}
+array([0.75])
+\end{lstlisting}
+
+\hypertarget{confusion-matrix}{%
+\subsection{Confusion matrix}\label{confusion-matrix}}
+
+\begin{lstlisting}[language=Python]
+import tensorflow as tf
+
+model = keras.models.load_model(r'T:\GItHub_Repos\models\top_layer\simple_cnn_dct_top_layer.h5')
+predictions = model.predict(x_exp.reshape(x_exp.shape[0], 1,1024))
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+preds = predictions.reshape(predictions.shape[0], n_elements)
+preds = tf.cast(preds, tf.float64)
+preds = np.array([tf.argmax(i) for i in preds])
+preds
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+labels_onehot = np.array([mlb.transform([[i]]) for i in y_exp])
+true_labels = labels_onehot.reshape(labels_onehot.shape[0],n_elements)
+true_labels = tf.cast(true_labels, tf.int64)
+true_labels = tf.map_fn(tf.argmax, true_labels)
+
+true_labels
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python]
+from sklearn.metrics import ConfusionMatrixDisplay
+
+cm = tf.math.confusion_matrix(true_labels, preds)
+
+disp = ConfusionMatrixDisplay(cm.numpy(), display_labels=elements)
+fig, ax = plt.subplots(figsize=(30,30))
+disp.plot(ax=ax)
+plt.show()
+plt.savefig('confusion_matrix.png', dpi=300, bbox_inches='tight')
+\end{lstlisting}
