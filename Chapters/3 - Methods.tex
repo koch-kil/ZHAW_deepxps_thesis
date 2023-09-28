@@ -100,7 +100,7 @@ With the structure chosen, an efficient training without substantial overfitting
 \section{Model evaluation and accuracies}
 
 When a model should be evaluated, the specific computation to obtain its performance must be adapted to its type, such as multi-class classification. 
-To evaluate the models' performance and training process, the loss and accuracy was obtained and plotted. Furthermore, the test data obtained as described in Chapter \ref{test_data} was predicted and visualized in a confusion matrix.
+To evaluate the models' performance and training process, the loss and accuracy were obtained and plotted. Furthermore, the test data obtained as described in Chapter \ref{test_data} was predicted and visualized in a confusion matrix.
 
 For the third task of elemental quantification, a custom accuracy measure was introduced to be able to express the accuracy by means of a number and to show the comparability with similar methods. This function, shown in equation \ref{eq:threshacc}, only considers components with known relative share above 10\% ($\mathbb{I}(y_i > 0.1)$).It then computes the absolute difference of the true value ($y_{i}$) and the predicted value ($\hat{y}$). If this difference is more than 10\% of the true value, it is considered false, otherwise true. Thus, we evaluate what percentage of components our model predicts correctly within a 10\% margin, given the component contributes to at least 10\% of the contents.
 

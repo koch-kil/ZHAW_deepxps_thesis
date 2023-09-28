@@ -13,7 +13,7 @@ Attention-based neural networks have been applied to near infrared spectroscopy 
 For each model, a set of hyperparameters define either initial, or fixed values used for the training. 
 
 Multiple training cycles are performed on the dataset, which is shuffled before each training cycle, also called epoch. A so-called \emph{loss function} is introduced which in general resembles how far the predicted $\hat{y}$ labels are from the correct labels $y$ $(\hat{y} - y)$.
-In each epoch, the weights of the model are re-evaluated subject to minimizing the defined loss-function. This re-evaluation is done with gradient-based methods, before the weights are changed based on the computed gradient multiplied with the defined learning rate. The initial data available is split into a training and validation dataset. The weights are trained only on the training dataset, while the validation dataset is used to check the performance on data which is new for the model and tune its hyperparameters. Model training is successful if we observe the training data loss decrease over the epochs. 
+In each epoch, the weights of the model are re-evaluated subject to minimizing the defined loss-function. This re-evaluation is done with gradient-based methods, before the weights are changed based on the computed gradient multiplied with the defined learning rate. The initial data available is split into a training and validation dataset. The weights are only trained on the training dataset, while the validation dataset is used to check the performance on data which is new for the model and tune its hyperparameters. Model training is successful if we observe the training data loss decrease over the epochs. 
 
 
 \subsection{General patterns}

@@ -76,36 +76,3 @@ for foldername, subfolders, filenames in os.walk(root_folder):
 \begin{lstlisting}[language=Python]
 len(files) # we have 121 test files
 \end{lstlisting}
-
-\begin{lstlisting}
-121
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-files = [f for f in files if len(f.split('_')) > 2 and len(f.split('_')[-1]) < 15 and not 'Cali' in f]
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-files
-\end{lstlisting}
-
-\begin{lstlisting}
-['../../data/test_data/XPSSurfA\\10\\Fe_Fe.vms',
- '../../data/test_data/XPSSurfA\\13\\Ar_Ar.vms',
- '../../data/test_data/XPSSurfA\\149\\Cu_Cu_Ultra.vms',
- '../../data/test_data/XPSSurfA\\15\\Mg_Mg.vms',
- '../../data/test_data/XPSSurfA\\150\\Ag_Ag_Ultra.vms',
- '../../data/test_data/XPSSurfA\\151\\Au_Au_Ultra.vms',
- '../../data/test_data/XPSSurfA\\154\\Nb_Nb.vms',
- '../../data/test_data/XPSSurfA\\16\\Ni_Ni.vms',
- '../../data/test_data/XPSSurfA\\17\\Mo_Mo.vms',
- '../../data/test_data/XPSSurfA\\18\\Ta_Ta.vms',
- '../../data/test_data/XPSSurfA\\2\\Au_Au.vms',
- '../../data/test_data/XPSSurfA\\20\\Al_Al.vms',
- '../../data/test_data/XPSSurfA\\22\\Si_Si.vms',
- '../../data/test_data/XPSSurfA\\3\\Ag_Ag.vms',
- '../../data/test_data/XPSSurfA\\4\\Pt_Pt.vms',
- '../../data/test_data/XPSSurfA\\5\\Cu_Cu.vms',
- '../../data/test_data/XPSSurfA\\7\\W_W.vms',
- '../../data/test_data/XPSSurfA\\9\\In_In.vms']
-\end{lstlisting}

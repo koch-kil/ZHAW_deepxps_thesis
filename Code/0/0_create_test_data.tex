@@ -8,7 +8,7 @@ import pathlib as pl
 \end{lstlisting}
 
 \hypertarget{experimental-data}{%
-\section*{Experimental data}\label{experimental-data}}
+\section*{Elemental data}\label{experimental-data}}
 
 \begin{lstlisting}[language=Python]
 import os
@@ -76,58 +76,6 @@ for i, file in enumerate(multi_exp):
 labels = labels.reshape(spectra.shape[0], 81)
 \end{lstlisting}
 
-\begin{lstlisting}
-Azurite (CuCO3,Cu(OH)2) Arizona,USA - no carbonate.VMS
-CaF2-P2O5-Al2O3 (10-85-5 ) fresh exposed bulk.VMS
-CaF2-P2O5-Al2O3 (30-65-5) fresh exposed bulk.VMS
-CaF2-P2O5-Al2O3 (50-45-5) fresh exposed bulk.VMS
-CaF2-P2O5-Al2O3 (60-35-5) IPA cleaned.VMS
-Cs2O-Na2O-SiO2 (11-14-75) (2nd synthesis attempt) fresh exposed bulk .VMS
-Cs2O-Na2O-SiO2 (12.5-12.5-75) (2nd synthesis attempt) fresh exposed bulk.VMS
-Cs2O-Na2O-SiO2 (14-11-75) (2nd synthesis attempt) fresh exposed bulk.VMS
-Cs2O-Na2O-SiO2 (18-7-75) (2nd synthesis attempt) fresh exposed bulk.VMS
-Cs2O-Na2O-SiO2 (7-18-75 ) (2nd synthesis attempt) fresh exposed bulk.VMS
-K2O-SiO2 (25-75) fresh exposed bulk.VMS
-Li2B4O7 - tetraborate -powder.VMS
-Li2CO3 from CO2 attack on LiOH powder.VMS
-Li2CO3 powder.txt.VMS
-Li2O-SiO2 (25-75) (2nd synthesis attempt) fresh exposed bulk.VMS
-Li2O-SiO2 (25-75) fresh exposed bulk.VMS
-Li2O-SiO2 (25-75) ion etched.VMS
-Li2O-TeO2 (30-70) fresh exposed bulk.VMS
-LiF xtl - fresh bulk.VMS
-LiI bead - as recd- partial set.txt.VMS
-Molybdenite (MoS2) mineral, freshly delaminated.VMS
-Na2O-Cs2O-SiO2 (11-14-75) ion etched.VMS
-Na2O-Cs2O-SiO2 (12.5-12.5-75) ion etched.VMS
-Na2O-Cs2O-SiO2 (14-11-75) ion etched.VMS
-Na2O-Cs2O-SiO2 (18-77-5) ion etched.VMS
-Na2O-Cs2O-SiO2 (7-18-75) ion etched.VMS
-Na2O-SiO2 (10-90) fresh exposed bulk, ion etched.VMS
-Na2O-SiO2 (10-90) fresh exposed bulk.VMS
-Na2O-SiO2 (15-85)  ion etched.VMS
-Na2O-SiO2 (15-85) as rec'd.VMS
-Na2O-SiO2 (20-80) fresh exposed bulk.VMS
-Na2O-SiO2 (20-80) ion etched.VMS
-Na2O-SiO2 (25-75) (2nd synthesis attempt) fresh exposed bulk.VMS
-Na2O-SiO2 (25-75) as rec'd.VMS
-Na2O-SiO2 (25-75) ion etched.VMS
-Na2O-TeO2 (30-70) as rec'd.VMS
-Na2O-TeO2 (30-70) fresh exposed bulk.VMS
-Ne, neon (Ne in graphite), mono.VMS
-Tantalite ((Fe, Mn) Ta2O6) Minas Gerais, Brazil fresh bulk.VMS
-TeO2-PbO-PbF2 (80-10-10) as rec'd.VMS
-TeO2-PbO-PbF2 (80-16-4) as rec'd.VMS
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-spectra.shape
-\end{lstlisting}
-
-\begin{lstlisting}
-(114, 1024)
-\end{lstlisting}
-
 \begin{lstlisting}[language=Python]
 # spectra with multi composition
 import pickle
@@ -160,100 +108,13 @@ exp_df.shape
 (1024, 7)
 \end{lstlisting}
 
-\begin{lstlisting}[language=Python]
-exp_df
-\end{lstlisting}
-
-\begin{lstlisting}
-      Al_Al_100_separate  Cu_Cu_100_separate  Cu_Pd_10_separate  \
-0               0.110302            0.059084           0.072739   
-1               0.115370            0.060309           0.079186   
-2               0.110819            0.059952           0.080867   
-3               0.115139            0.061772           0.078846   
-4               0.117853            0.064936           0.082966   
-...                  ...                 ...                ...   
-1019            0.020608            0.059000           0.112031   
-1020            0.020913            0.078414           0.145789   
-1021            0.021525            0.057428           0.136987   
-1022            0.018391            0.016753           0.102849   
-1023            0.010910            0.005572           0.052511   
-
-      Cu_Pd_50_separate  O_Al_15_separate  O_Al_20_separate  \
-0              0.061376          0.252623          0.178525   
-1              0.063053          0.250591          0.182232   
-2              0.065489          0.243144          0.190637   
-3              0.068788          0.232558          0.201756   
-4              0.070013          0.222511          0.207036   
-...                 ...               ...               ...   
-1019           0.066674          0.012991          0.014770   
-1020           0.087038          0.011655          0.014891   
-1021           0.067865          0.012967          0.013133   
-1022           0.030306          0.011025          0.008869   
-1023           0.011041          0.006942          0.006309   
-
-      Pd_Pd_100_separate  
-0               0.026610  
-1               0.025165  
-2               0.026568  
-3               0.026463  
-4               0.028459  
-...                  ...  
-1019            0.064758  
-1020            0.082636  
-1021            0.089487  
-1022            0.088438  
-1023            0.056257  
-
-[1024 rows x 7 columns]
-\end{lstlisting}
 
 \begin{lstlisting}[language=Python]
 exp_df # 213 spectra with elemental composition
 exp_df.to_pickle('../../data/depth_profile.pkl')
 \end{lstlisting}
 
-\begin{lstlisting}[language=Python]
-plt.plot(x_new, y_new)
-plt.title('_'.join(label))
-\end{lstlisting}
-
-\begin{lstlisting}
-Text(0.5, 1.0, 'Pd_Pd')
-\end{lstlisting}
-
-\includegraphics{30862cdbc0e52bd98478c8393538cfa42911b3d4.png}
 
 \begin{lstlisting}[language=Python]
 label
 \end{lstlisting}
-
-\begin{lstlisting}
-['Cu', 'Cu']
-\end{lstlisting}
-
-\hypertarget{plotting}{%
-\subsubsection*{Plotting}\label{plotting}}
-
-\begin{lstlisting}[language=Python]
-path1 = r'T:\GItHub_Repos\data_xps\Spectra_Out\start_t5min_pd_105.vms' # only palladium visible
-path2 = r'T:\GItHub_Repos\data_xps\Spectra_Out\50_50_t5min_106_pd.vms'
-path3 = r'T:\GItHub_Repos\data_xps\Spectra_Out\100_0_pd_106_pd.vms'
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-x_1, y_1, x_new_1, y_new_1, label_1 = preprocess.parse_file(path1, filetype='vms', scale=True, N_points=1024)
-x_2, y_2, x_new_2, y_new_2, label_2 = preprocess.parse_file(path2, filetype='vms', scale=True, N_points=1024)
-x_3, y_3, x_new_3, y_new_3, label_3 = preprocess.parse_file(path3, filetype='vms', scale=True, N_points=1024)
-\end{lstlisting}
-
-\begin{lstlisting}[language=Python]
-plt.plot(x_new_1, y_new_1)
-plt.plot(x_new_2, y_new_2)
-plt.plot(x_new_3, y_new_3)
-\end{lstlisting}
-
-\begin{lstlisting}
-[<matplotlib.lines.Line2D at 0x1cf52b152e0>]
-\end{lstlisting}
-
-\includegraphics{b43a945542eb47ad43983a141ba32af9bcbe2fae.png}
