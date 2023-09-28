@@ -13,7 +13,7 @@ For multi-component spectra, $\nmultispectra$ experimental spectra were obtained
 
 \subsection{Experimental depth profiles using sputtering}
 \label{exp_depth}
-To test the models' capabilities to predict depth profiles of spectra, sputtering experiments were conducted using Copper and Palladium (Cu/Pd). Another dataset was provided by a group at Empa, consisting of Aluminum with oxidation layers. Figure \ref{fig:exp_samples} shows the underlying structure of the test dataset. From this, four spectra were extracted for a) and three spectra from b).
+To test the models' capabilities to predict depth profiles of spectra, sputtering experiments were conducted using Copper and Palladium (Cu/Pd). Another dataset was provided by a group at Empa, consisting of Aluminum with oxidation layers. Figure \ref{fig:exp_samples} shows the underlying structure of the test dataset. From this, four spectra were extracted for a) and three spectra from b). Especially the Aluminum-oxide is an interesting sample to consider because the spectra shows many effects such as multiplet splitting, chemical shift, an Auger-peak and plasmon-peaks, as shown in Figure \ref{fig:exp_alox}. The multiplet splitting is present on the Al 2s and the Al 2p peaks.
 
 \begin{figure}
     \centering
@@ -22,6 +22,12 @@ To test the models' capabilities to predict depth profiles of spectra, sputterin
     \label{fig:exp_samples}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/al_ox_2_nmspectrum.png}
+    \caption{Structure of test-data samples for depth profiling, a) ion-sputtered depth profile of 20 nm Copper layer on Palladium, b) Aluminum with varying oxidation layers (2 nm, 1.5 nm and 0 nm}
+    \label{fig:exp_samples}
+\end{figure}
 
 \subsection{Data preprocessing}
 

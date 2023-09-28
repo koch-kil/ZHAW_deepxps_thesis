@@ -30,10 +30,10 @@ Categorical Accuracy computes the correctly predicted label based on the argmax 
 \label{cce}
 \text{Categorical Cross-Entropy} = -\sum_{c=1}^My_{o,c}\log_{n}(p_{o,c})
 \end{equation}
-For problems where the labels are non-exclusive (multiple can be true) the mean squared error loss can be used. This is based on the equation \ref{eq:MSE}.
+For problems where the labels are non-exclusive (multiple can be true) the mean absolute error loss can be used. This is based on the equation \ref{eq:MAE}.
  \begin{equation}
- \label{eq:MSE}
-     \text{Mean Squared Error} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+ \label{eq:MAE}
+     \text{Mean Absolute Error} = \frac{1}{n}\sum_{i=1}^{n} |y_i - \hat{y}_i|
  \end{equation}
  
 \subsubsection{Dense layers}

@@ -43,6 +43,13 @@ To simulate, the command-line-interface feature of Sessa was used, which is docu
 Because the Sessa software didn't allow reading the chemical shift database from the command line interface, the NIST database was webscraped and saved as a readable database - the code can be found in Appendix \ref{NIST_WebScraper}. Unfortunately, the NIST database has entries with wrong energy descriptions (kinetic/binding energy) and thus, any values deviating more than 10\% from the median or the original peak position was converted to the opposite measure. For example, if a database entry is a Sillicon 1s peak position is at kinetic energy of 100 eV, it will deviate more than 10\% from the median kinetic energy of the Si 1s peak which is at 1386.5 eV. Thus, it will be labelled as binding energy. 
 For each mixture compound simulated according to model d), a fuzzy string matching was performed and the best match was taken with a certain probability $p=0.8$ or omitted with probability $1-p = 0.2$.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{Figures/depth.png}
+    \caption{Simulation spectra of two different overlayer thicknesses for Copper on Palladium}
+    \label{fig:depths}
+\end{figure}
+
 
 %-----------------------------------
 % SUBSECTION 2
