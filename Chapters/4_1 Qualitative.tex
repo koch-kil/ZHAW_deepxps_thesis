@@ -86,13 +86,12 @@ From Table \ref{tab:acc_qual}, we can see that the performance of the bottom lay
 
 % As there's almost no test data this is experimental
 Depth profiling or determination of overlayer thickness is often conducted in scientific experiments. However, data is usually not publicly available - and if - it does often not include survey spectra. This is because these measures are usually done with ion-sputtering profiling or angle-resolved measurements and as these experiments are time-consuming, only the regions of interests (where the peaks are expected depending on the sample) are scanned.
-As depth profiling data is not readily available from public databases, the datasets obtained internally as explained in chapter \ref{exp_depth}, were used to evaluate the model on experimental data.
-% model performance
+As depth profiling data is not readily available from public databases, the datasets obtained internally as explained in chapter \ref{exp_depth}, were used to evaluate the model on experimental data. The models previously explained were slightly adapted for this task to train efficiently. For example, the CBAM model had a filter-size of 1024.
 
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c|c|c|c}
-        Dataset & Model   & No. Parameters & Training Dataset    & Validation Dataset    \\
+        Dataset & Model   & No. Parameters & Training set    & Validation set    \\
         \hline
  mixcont+oxides& CNN     &   8.2 M       &      50.75      &          42.66         \\
                & CNN-DCT &   12.2 M       &     38.06           &      37.24           \\
@@ -100,26 +99,46 @@ As depth profiling data is not readily available from public databases, the data
                & ViT     &    35.6 M     &      39.03            &       31.24           \\
 
     \end{tabular}
-    \caption{ and number of Parameters of the models in respect to dataset and layer}
+    \caption{Accuracies and number of parameters of the models for layer thickness prediction}
     \label{tab:acc_depth}
 \end{table}
 
-The test data contained seven spectra with the structure explained in \ref{exp_depth}. Each spectrum is evaluated with each model and the results are shown in Table \ref{tab:acc_depth}, where the Al-Oxide denotes the sample b) shown in Figure \ref{fig:exp_samples} and the Cu/Pd denotes the sample a). From the results, it is obvious that we are far from a good prediction model. However, we can interpret whether tendencies are correct. For all Aluminum-Oxides, 
-
+The test data contained seven spectra with the structure explained in \ref{exp_depth}. Each spectrum is evaluated with each model and the results are shown in Table \ref{tab:acc_depth}, where the Al-Oxide denotes the sample b) shown in Figure \ref{fig:exp_samples} and the Cu/Pd denotes the sample a). From the results, it is obvious that we are far from a good prediction model. However, we can interpret whether tendencies are correct. For the covered (2 and 1.5nm) Aluminum-Oxides, the prediction had the correct tendency for all models but the ViT-model. However, the predictions for the copper and palladium sample showed much less difference. It should be noted, that the 20 nm overlayer would never be predicted correctly with our model, because we did not include such data. However, by using the qualitative model for top and bottom layer determination, we predicted the composition as shown in \ref{tab:layers_depth}. This was done to possibly infer whether the model for depth determination in combination with the layer-prediction model could provide an explanation for the samples under investigation.
 
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c|c|c|c|c|c|c}
         Model  &    \multicolumn{3}{|c|}{Al-Oxide}     & \multicolumn{4}{c}{Cu/Pd}            \\
         \hline
-Ground truth   &       2   &   1.5   &  0   & 20   & 5    & 1     & 0                               \\
+Ground truth   &       2   &   1.5   &  0   & *20   & 5    & 1     & 0                               \\
 \hline
-CNN            &    2.29   &  2.03  & 2.12  & 2.01  &  2.01 & 2.0   & 3.0                                \\
-CNN-DCT        &    4.08   &  3.31  & 3.16  & 2.22 &  2.22 & 2.04  & 3.74                                 \\
-CBAM           &    2.6    &  2.1   & 2.23  & 2.01 &  2.0  & 1.04  & 2.01                                \\
-ViT            &    3.23   &  4.18  & 2.03  & 2.39 &  2.01 & 2.01  & 4.04                               \\
+CNN            &    2.29   &  2.03  & 2.12  & *2.01  &  2.01 & 2.0   & 3.0                                \\
+CNN-DCT        &    4.08   &  3.31  & 3.16  & *2.22 &  2.22 & 2.04  & 3.74                                 \\
+CBAM           &    2.6    &  2.1   & 2.23  & *2.01 &  2.0  & 1.04  & 2.01                                \\
+ViT            &    3.23   &  4.18  & 2.03  & *2.39 &  2.01 & 2.01  & 4.04                               \\
 
     \end{tabular}
-    \caption{Depth predictions and ground truth in nanometers for the seven test data spectra}
+    \caption{Depth predictions and ground truth in nanometers for the seven test data spectra *nothing similar in training data.}
     \label{tab:acc_depth}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c|c|c}
+        Sample & Layer    & Ground truth & Predicted     \\
+                 \hline
+\multirow{2}{3em}{20 nm}             &  Top    &       Cu      &       Cu               \\
+                                      &  Bottom&        Cu      &       O        \\
+                             \hline
+\multirow{2}{3em}{5 nm}               &  Top    &       Cu      &       Cu               \\
+                                       &  Bottom&        Pd      &       Pd  \\
+                             \hline
+\multirow{2}{3em}{1 nm}                &  Top    &       Cu      &   K               \\
+                                       &  Bottom&        Pd      &   Pd  \\
+                             \hline
+\multirow{2}{3em}{0 nm}                &  Top    &       Pd      &    Pd               \\
+                                       &  Bottom&        Pd      &    Be  \\
+    \end{tabular}
+    \caption{Prediction of the depth profile layers with the ViT model from task 1.}
+    \label{tab:layers_depth}
 \end{table}
