@@ -460,12 +460,14 @@ def transform_depth_label(label):
     100, 90, 80, 70, 60 Etching
     100, 90, 80, 70, 60, Angstrom
     '''
+    import re
     import math
-    
+    import numpy as np
     regex = re.compile('_[A-Za-z]+O')
     if regex.search(label) is not None:
         depth = label.split('_')[2]
-        layer_thickness = (layers.index(int(depth))) / (len(layers)-1)
+        layer_thickness = (layers.index(int(depth)))
+        return np.array([int(layer_thickness)+1])
             
     if len(label.split('_')) < 4:
         top, bot, depth = label.split('_')
@@ -476,19 +478,14 @@ def transform_depth_label(label):
     if gradient == 'separate':
         # gradient = False
         gradient = 0
-        layer_thickness = (layers.index(int(depth))) / (len(layers)-1)
+        layer_thickness = (layers.index(int(depth)))
     else:
         # gradient = True
         gradient = 1
         depth = int(depth)
-        if depth <= 60:
-            layer_thickness = 0.0
-        elif depth > 100:
-            layer_thickness = 1.0
-        else:
-            layer_thickness = (depth - 60) / 40.0
+        layer_thickness = (depth -60) / 10
 
-    return np.array([layer_thickness])
+    return np.array([int(layer_thickness)+1])
 \end{lstlisting}
 
 \begin{lstlisting}[language=Python]

@@ -331,19 +331,3 @@ for entry in tqdm(list(perms)[0]):
             shifts_probability=0.6)
     exp.simulate()
 \end{lstlisting}
-
-\hypertarget{visualize}{%
-\section*{visualize}\label{visualize}}
-
-\begin{lstlisting}[language=Python]
-import matplotlib as mpl
-import seaborn as sns
-import pandas as pd
-
-os.chdir(root_dir)
-
-df = pd.read_csv('./data/Si_1_Zn_1/results/spectra.spcreg1.spc', sep='\s+', names=['Energy [eV]', 'Intensity'], skiprows=1)
-df2 = pd.read_csv('./data/Zn_1_Si_1/results/spectra.spcreg1.spc', sep='\s+', names=['Energy [eV]', 'Intensity'], skiprows=1)
-df.Intensity.plot()
-df2.Intensity.plot()
-\end{lstlisting}
