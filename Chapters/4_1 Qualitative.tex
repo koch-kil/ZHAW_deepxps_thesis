@@ -4,7 +4,7 @@
 \section{Qualitative elemental identification of bilayer systems}
 \subsection{Elemental identification}
 % model performance
-The model performance for the qualitative elemental identification is shown in Table \ref{tab:acc_qual}. The categorical accuracies were computed for the individual clean and the mixcont dataset. Because experimental data can contain contamination, we generally expect the mixcont dataset to make our model more robust in that respect.
+The model performance for the qualitative elemental identification is shown in Table \ref{tab:acc_qual}. The categorical accuracies were computed for the training on the mixcont dataset. 
 During the model development, it was obvious that we are prone to overfitting the simulated data resulting in poor performance on test data. Especially, because we do not represent the experimental spectra with enough accuracy, we must make sure to focus on the robustness of the model. Thus, the obvious approach was to choose the most simple model which was able to train effectively without overfitting and before aiming at the highest accuracy rates. The models remained unchanged for the qualitative identification for all datasets. Thus, a total of 8 models were developed for task 1 - one of each model type for each layer and the models were trained on the three datasets. For each best performing model for each layer and dataset, the confusion matrices are shown.
 
 \begin{table}[H]
@@ -22,16 +22,7 @@ During the model development, it was obvious that we are prone to overfitting th
                 &       & CNN-DCT &   12.3 M       &    85.39      &    79.39       &   50.23       \\
                 &       & CBAM    &   20.1 M        &    86.65     &    70.96     &       27.44    \\
                 &       & ViT     &   35.8 K      &     61.65     &      68.35    &  \textbf{57.21} \\
-        \hline                                   
-        clean   & top   & CNN     &   8.2 M        &               &                &            \\
-        (n=65k)&       & CNN-DCT &    12.3 M      &               &                &            \\
-                &       & CBAM    &   20.1 M       &               &                &            \\
-                &       & ViT     &   35.8 K       &               &                &            \\
-        \hdashline
-                & bot   & CNN     &   8.2 M         &               &                &             \\
-                &       & CNN-DCT &   12.3 M        &               &                &             \\
-                &       & CBAM    &   20.1 M        &               &                &            \\
-                &       & ViT     &   35.8 K        &               &                &            \\
+
     \end{tabular}}
     \caption{Categorical accuracies, and number of parameters of the models in respect to dataset and sample layer
     *Test Dataset n=\nelementalspectra}
@@ -104,10 +95,10 @@ As depth profiling data is not readily available from public databases, the data
     \begin{tabular}{c|c|c|c|c}
         Dataset & Model   & No. Parameters & Training Dataset    & Validation Dataset    \\
         \hline
- mixcont+oxides& CNN     &                &                       &                         \\
-               & CNN-DCT &                &                       &                         \\
-               & CBAM    &                &                       &                         \\
-               & ViT     &                &                       &                         \\
+ mixcont+oxides& CNN     &   8.2 M       &      50.75      &          42.66         \\
+               & CNN-DCT &   12.2 M       &     38.06           &      37.24           \\
+               & CBAM    &   40.1 M       &    46.65             &      39.19            \\
+               & ViT     &    35.6 M     &      39.03            &       31.24           \\
 
     \end{tabular}
     \caption{ and number of Parameters of the models in respect to dataset and layer}
@@ -119,15 +110,15 @@ The test data contained seven spectra with the structure explained in \ref{exp_d
 
 \begin{table}[H]
     \centering
-    \begin{tabular}{c|c|c|c|c|c|c|c}
+    \begin{tabular}{c|c|c|c|c|c|c|c|}
         Model  &    \multicolumn{3}{|c|}{Al-Oxide}     & \multicolumn{4}{c}{Cu/Pd}            \\
         \hline
-Ground truth   &       2   &   1.5   &  0   & 20   & 10    & 1     & 0                               \\
+Ground truth   &       2   &   1.5   &  0   & 20   & 5    & 1     & 0                               \\
 \hline
-  CNN          &           &        &       &      &       &       &                                     \\
-CNN-DCT        &           &        &       &      &       &       &                                     \\
-CBAM           &           &        &       &      &       &       &                                     \\
-ViT            &           &        &       &      &       &       &                                     \\
+CNN            &    2.29   &  2.03  & 2.12  & 2.01  &  2.01 & 2.0   & 3.0                                \\
+CNN-DCT        &    4.08   &  3.31  & 3.16  & 2.22 &  2.22 & 2.04  & 3.74                                 \\
+CBAM           &    2.6    &  2.1   & 2.23  & 2.01 &  2.0  & 1.04  & 2.01                                \\
+ViT            &    3.23   &  4.18  & 2.03  & 2.39 &  2.01 & 2.01  & 4.04                               \\
 
     \end{tabular}
     \caption{Depth predictions and ground truth in nanometers for the seven test data spectra}
