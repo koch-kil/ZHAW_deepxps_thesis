@@ -23,7 +23,7 @@ From all experimental data, $\nmultispectra$ elemental spectra were used for the
     \label{tab:acc_quant}
 \end{table}
 
-As the threshold accuracy represents the percentage of elements with >10\% proportional content correctly quantified within a $\pm$10\% relative margin, it can be well compared to an experienced researchers result. With a maximum threshold accuracy of 3.83\% however, we are far off a good result for our best model. The full prediction mapped as heatmap is shown in Figure \ref{fig:multi_best_model}. It is interesting that the model with the best performance on the dataset has the least performance on the training and validation datasets. For our best model, the mean absolute error per element is plotted in Figure \ref{fig:boxplot}.
+As the threshold accuracy represents the percentage of elements with >10\% proportional content correctly quantified within a $\pm$10\% relative margin, it can be well compared to an experienced researchers result. With a maximum threshold accuracy of 3.83\% however, we are far off a good result for our best model. The full prediction mapped as heatmap is shown in Figure \ref{fig:multi_best_model}. It is interesting that the model with the best performance on the dataset has the least performance on the training and validation datasets. This could be due to the model being more robust, however as it contains 35.3 M parameters to train, we would expect it to possibly overfit the data. Thus, the most probable explanation is that our training dataset is not sufficient both in terms of number and resemblance to experimental data. For our best model, the mean absolute error per element is plotted in Figure \ref{fig:boxplot}.
 
 \begin{figure}
     \centerline{
@@ -36,7 +36,7 @@ As the threshold accuracy represents the percentage of elements with >10\% propo
 \begin{figure}
     \centerline{
     \centering
-    \includegraphics[width=\textwidth]{Figures/mae_per_element_best_perf_multi.png}}
+    \includegraphics[width=1.1\textwidth]{Figures/mae_per_element_best_perf_multi.png}}
     \caption{The mean absolute error per element of the CNN-DCT model for quantitative prediction}
     \label{fig:boxplot}
 \end{figure}
